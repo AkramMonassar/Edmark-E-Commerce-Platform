@@ -11,22 +11,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if ($email === '' || $pass === '') {
         $error = 'يرجى إدخال الإيميل وكلمة المرور';
     } else {
-        $email_esc = mysqli_real_escape_string($con_db, $email);
-        $pass_md5  = md5($pass);
-        $pass_esc  = mysqli_real_escape_string($con_db, $pass);
+        // ✅ Prepared Statement: يمنع SQL Injection نهائيًا
+        $stmt = mysqli_prepare($con_db, "SELECT u_id, u_name, u_email, u_pass FROM users WHERE u_email = ? LIMIT 1");
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
-        $query  = "SELECT * FROM users WHERE u_email = '$email_esc' AND (u_pass = '$pass_md5' OR u_pass = '$pass_esc') LIMIT 1";
-        $result = mysqli_query($con_db, $query);
+        if ($row) {
+            $ok = false;
 
-        if ($result && mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
-            $_SESSION['user']    = $row['u_name'];
-            $_SESSION['u_email'] = $row['u_email'];
-            header("Location: index.php");
-            exit;
-        } else {
-            $error = 'الإيميل أو كلمة المرور غير صحيحة';
+            if (password_verify($pass, $row['u_pass'])) {
+                $ok = true; // حساب محدّث (bcrypt)
+            } elseif ($row['u_pass'] === md5($pass) || $row['u_pass'] === $pass) {
+                // حساب قديم (md5 أو نص صريح): سجّل دخول وارتقِ بالتشفير تلقائيًا
+                $ok = true;
+                $newHash = password_hash($pass, PASSWORD_DEFAULT);
+                $up = mysqli_prepare($con_db, "UPDATE users SET u_pass = ? WHERE u_id = ?");
+                mysqli_stmt_bind_param($up, "si", $newHash, $row['u_id']);
+                mysqli_stmt_execute($up);
+            }
+
+            if ($ok) {
+                session_regenerate_id(true); // يمنع Session Fixation
+                $_SESSION['user']    = $row['u_name'];
+                $_SESSION['u_email'] = $row['u_email'];
+                header("Location: index.php");
+                exit;
+            }
         }
+        $error = 'الإيميل أو كلمة المرور غير صحيحة';
     }
 }
 include("include/header.php");
