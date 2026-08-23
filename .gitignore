@@ -1,0 +1,7 @@
+# ملف الاتصال الحقيقي (يحتوي بيانات الدخول)
+connection/connection.php
+
+# ملفات النظام
+Thumbs.db
+.DS_Store
+*.log
