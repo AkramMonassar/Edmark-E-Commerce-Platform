@@ -1,14 +1,14 @@
 # 🛒 Edmark E-Commerce Platform (Under Active Modernization)
 
-A full-stack e-commerce web application originally developed as an academic project, currently undergoing a complete structural, architectural, and visual overhaul. The system has been successfully migrated to **PHP 8.2** and is being modernized into a robust production-ready online storefront.
+A full-stack e-commerce web application originally developed back in **2017 as a university course project for PHP**. Recently, the entire legacy codebase has been successfully modernized and migrated to **PHP 8.2** to align with modern web standards, and it is currently undergoing an active, complete UI/UX and architectural overhaul.
 
 ---
 
-### 🛠️ Current Project Status & Modernization Roadmap
-* **[✓] PHP 8.2 Migration:** Upgraded the legacy core architecture to support strict types and full compatibility with PHP 8.2+.
-* **[ 🔄 In Progress ] UI/UX Overhaul:** Transforming the legacy front-end styles using modern layouts and responsive components.
-* **[ Planned ] Database Optimization:** Refactoring the relational schema inside the `Db` directory for faster queries and better entity relationships.
-* **[ Planned ] Security Enhancements:** Implementing modern authentication and prepared statements to prevent SQL injections.
+### 🛠️ Project Status & Modernization Roadmap
+* **[✓] PHP 8.2 Migration (Completed):** Upgraded the legacy 2017 core execution architecture to support strict typing and full compatibility with PHP 8.2+.
+* **[ 🔄 In Progress ] UI/UX Overhaul:** Transforming the older layout into a modern, sleek, and highly responsive shopping experience.
+* **[ Planned ] Database Optimization:** Refactoring the relational schema inside the `Db/` directory for secure and faster querying.
+* **[ Planned ] Security Hardening:** Implementing strict error handling, input filtering, and prepared statements to eliminate SQL injection vulnerabilities.
 
 ---
 
