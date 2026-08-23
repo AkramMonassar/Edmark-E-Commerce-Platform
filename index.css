@@ -1,0 +1,253 @@
+/* &&&&&&&&&&&&&&&&&7 body */
+html, body{
+   font-family: 'Raleway', sans-serif;
+   font-size: 100%;
+   background-color:whitesmoke; 
+    margin-right: 10%;
+    margin-left: 10%;    
+}
+
+#body_div
+{
+   
+
+}
+/* &&&&&&&&&&&&&&&&&& header &&&&&&&&&&&&&&&&& */
+.header
+    {
+   
+    height: 150px;
+    width: 100%;
+    color: black;
+    /* margin: 20px; */
+    /* padding: 20px; */
+    margin-bottom:20px;  
+       
+        
+    } 
+#table
+    {
+        width: 100%;
+        height: 100%;
+        border-radius: 30px;
+         background-color: gray;
+    
+    }
+#img_header
+{
+    text-align: center;
+}
+#td_cart
+{
+    text-align: center;
+}
+#cart_all
+{
+    width:300px;
+    height: -4px;
+}
+#cart_1
+{
+    width:100%;
+    height: 70px;
+}
+#cart_2
+{
+    width: 100%;
+    height: 34px;
+}
+/* &&&&&&&&&&&&&&&&&& menu &&&&&&&&&&&&&&&&& */
+
+#menu
+    {
+    /* background-color: deepskyblue; */
+    margin: 0px;
+    padding:1px;
+    background-color: gray;
+    margin-bottom: 19px;
+    }
+
+
+dev#menu ul
+    {
+        margin: 0;padding:5;
+        
+    }
+div#menu ul li  
+    {
+        display: inline;padding:5px;margin:20px;
+        
+       
+        
+    }
+ #a_menu:link, #a_menu:visited {
+    /* background-color: firebrick; */
+    color: currentColor;
+    padding: 13px 14px;
+    
+    text-decoration: none;
+   
+    /* text-transform: uppercase; */
+            font-size: small;
+    
+    
+}
+
+#a_menu:hover, #a_menu:active {
+    background-color:whitesmoke;
+}
+
+/* &&&&&&&&&&&&&&&&&& movemeng picture &&&&&&&&&&&&&&&&& */
+
+    #mov_picture
+    {
+    /* width: 100%; */
+    /* height: 500px; */
+    /* margin: 20px; */
+    margin-bottom: 20px;
+}
+        
+    }
+#wowslider-container1
+    {
+        width: 100%;
+        height: 600px;
+    }
+
+
+/* &&&&&&&&&&&&&&&&&& details &&&&&&&&&&&&&&&&& */
+#det
+{
+    width: 100%;
+    border-radius: 10px dashed red;
+}
+#details
+{
+    border-radius: 10px dashed red;
+    width: 25%;
+    height: 304px;
+    float: right;
+    
+}
+#img_details
+{
+    width: 100%;
+    height: 50%;
+    
+    float: right;
+   
+}
+#img2
+{
+    
+    width:150px; ;
+    height:150px;  
+}
+#describe
+{
+    width: 40%;
+    height: 50%;
+    float: right;
+        margin-left: 12px;
+}
+#cart_
+{
+    width: 33%;
+    float: right;
+}
+#price
+{
+    width: 33%;
+    float: right;
+}
+#deta
+{
+    width: 33%;
+    float: right;
+}
+
+
+
+
+
+
+/* &&&&&&&&&&&&&&&&&& under &&&&&&&&&&&&&&&&& */
+#footer
+{
+    width: 100%;
+    margin-top: 18px;
+    
+}
+#footer_table_2
+{
+    background-color:gray;
+    
+}
+#under
+{
+  background-color: gray;
+    
+ 
+}
+#copyright
+    {
+        width: 100%;
+        text-align: center;
+        
+    }
+
+#between_search
+    {
+        width: 30%;
+        
+    }
+
+
+#under_table
+{
+   width: 100%;
+  background-color: gray;
+    border-radius: 30px;
+}
+#under_table2
+{
+   width: 100%;  
+}
+#sss
+{
+    width: 100%;
+}
+/* ***************** product in details*******/
+#product_details
+{
+  width: 100%;
+background-color:gray;
+}
+#pro_det1
+{
+ width: 50%;
+ float: right;
+}
+#pro_det2
+{
+ width: 50%;
+ float: right;    
+}
+#img3
+{
+    width:150px; ;
+    height:150px;  
+}
+/* ***************** header*******/
+#h6
+{
+    color:whitesmoke;
+}
+#h33
+{
+  color:whitesmoke;  
+}
+#usersss
+{
+  
+}
