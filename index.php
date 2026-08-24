@@ -1,91 +1,96 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+require_once __DIR__ . '/include/csrf.php';
+require_once __DIR__ . '/connection/connection.php';
+
+// إضافة للسلة قبل أي output + إعادة توجيه (PRG) لمنع الإضافة المكررة عند التحديث
+if (isset($_POST['addtocart'])) {
+    csrf_check();
+    if (!isset($_SESSION['u_id'])) {
+        header("Location: login.php");
+        exit;
+    }
+    $uid = (int) $_SESSION['u_id'];
+    $id  = (int) $_POST['id'];
+    $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
+    if ($res && ($row = mysqli_fetch_assoc($res))) {
+        $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
+        if ($check && mysqli_num_rows($check) == 0) {
+            $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
+            $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
+            $price    = (int) $row['p_price'];
+            mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
+        }
+    }
+    header("Location: index.php?added=1");
+    exit;
 }
 include("include/header.php");
 ?>
-<div id="mov_picture">
-    <div id="wowslider-container1">
-        <div class="ws_images">
-            <ul>
-                <li><img src="photo/2.png" alt="1" title="1" id="wows1_0" /></li>
-                <li><img src="photo/1.png" alt="2" title="2" id="wows1_1" /></li>
-                <li><img src="photo/3.png" alt="3" title="3" id="wows1_2" /></li>
-                <li><img src="photo/4.png" alt="4" title="4" id="wows1_3" /></li>
-                <li><img src="photo/5.png" alt="5" title="5" id="wows1_4" /></li>
-                <li><img src="photo/6.png" alt="6" title="6" id="wows1_5" /></li>
-                <li><img src="photo/10.png" alt="7" title="7" id="wows1_6" /></li>
-            </ul>
-        </div>
-        <div class="ws_bullets">
-            <div>
-                <a href="#" title="1"><span><img src="photo/2.png" alt="1" />1</span></a>
-                <a href="#" title="2"><span><img src="photo/1.png" alt="2" />2</span></a>
-                <a href="#" title="3"><span><img src="photo/3.png" alt="3" />3</span></a>
-                <a href="#" title="4"><span><img src="photo/4.png" alt="4" />4</span></a>
-                <a href="#" title="5"><span><img src="photo/5.png" alt="5" />5</span></a>
-                <a href="#" title="6"><span><img src="photo/6.png" alt="6" />6</span></a>
-                <a href="#" title="7"><span><img src="photo/10.png" alt="7" />7</span></a>
-            </div>
-        </div>
-        <div class="ws_shadow"></div>
-    </div>
-    <script type="text/javascript" src="engine1/wowslider.js"></script>
-    <script type="text/javascript" src="engine1/script.js"></script>
+
+<?php if (isset($_GET['added'])): ?>
+<div class="container"><div class="alert alert-success py-2">تمت إضافة المنتج إلى السلة ✅</div></div>
+<?php endif; ?>
+
+<!-- سلايدر Bootstrap -->
+<div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3"></button>
+  </div>
+  <div class="carousel-inner">
+    <div class="carousel-item active"><img src="photo/2.png" class="d-block w-100 hero-img" alt="منتج"></div>
+    <div class="carousel-item"><img src="photo/1.png" class="d-block w-100 hero-img" alt="منتج"></div>
+    <div class="carousel-item"><img src="photo/3.png" class="d-block w-100 hero-img" alt="منتج"></div>
+    <div class="carousel-item"><img src="photo/4.png" class="d-block w-100 hero-img" alt="منتج"></div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
 </div>
-<center>
+
+<!-- شبكة المنتجات -->
+<div class="container" id="products">
+  <h4 class="mb-3"><i class="bi bi-basket2 text-brand"></i> منتجاتنا</h4>
+  <div class="row g-4">
     <?php
-    require('connection/connection.php');
-
-    $query  = "SELECT * FROM product";
-    $result = mysqli_query($con_db, $query);
+    $result = mysqli_query($con_db, "SELECT * FROM product");
     if ($result && mysqli_num_rows($result) > 0) {
-        while ($show_data = mysqli_fetch_assoc($result)) {
-            echo "
-        <div id='det'>
-            <div id='details'>
-                <h4 style='background:gray'>" . htmlspecialchars($show_data['p_name'], ENT_QUOTES) . "</h4>
-                <a href='details.php?id=" . (int)$show_data['p_id'] . "'><img id='img2' src='" . htmlspecialchars($show_data['p_img'], ENT_QUOTES) . "'></a>";
-            if (!isset($_SESSION['user']) && !isset($_SESSION['u_email'])) {
-                echo "<form action='login.php' method='post'>";
-            } else {
-                echo "<form action='index.php' method='post'>";
-            }
-            echo "
-                <input type='hidden' name='csrf_token' value='" . csrf_token() . "'/>
-                <input type='hidden' name='id' value='" . $show_data['p_id'] . "'/>
-                <input type='submit' name='addtocart' value='Add To Cart'/>
-            </form>
-            <label>" . (int)$show_data['p_price'] . "$</label>
-            </div>
-        </div>";
-        }
-    }
-
-    if (isset($_POST['addtocart'])) {
-        csrf_check();
-        if (!isset($_SESSION['u_id'])) {
-            header("Location: login.php");
-            exit;
-        }
-        $uid = (int) $_SESSION['u_id'];
-        $id  = (int) $_POST['id'];
-
-        $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
-        if ($res && ($row = mysqli_fetch_assoc($res))) {
-            $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
-            if ($check && mysqli_num_rows($check) == 0) {
-                $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
-                $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
-                $price    = (int) $row['p_price'];
-                if (!mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')")) {
-                    printf('Errormessage2: %s', mysqli_error($con_db));
-                }
-            }
+        while ($p = mysqli_fetch_assoc($result)) {
+            $pid = (int) $p['p_id'];
+    ?>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <a href="details.php?id=<?php echo $pid; ?>">
+          <img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>">
+        </a>
+        <div class="card-body text-center d-flex flex-column">
+          <h6 class="card-title"><?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?></h6>
+          <p class="fw-bold text-brand mb-2"><?php echo (int) $p['p_price']; ?>$</p>
+          <?php if (isset($_SESSION['u_id'])): ?>
+          <form method="post" action="index.php" class="mt-auto">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="id" value="<?php echo $pid; ?>">
+            <button type="submit" name="addtocart" class="btn btn-brand btn-sm w-100"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
+          </form>
+          <?php else: ?>
+          <a href="login.php" class="btn btn-outline-secondary btn-sm w-100 mt-auto">سجل الدخول للشراء</a>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+    <?php
         }
     }
     ?>
-</center>
+  </div>
+</div>
+
 <?php
 include("include/footer.php");
 ?>
