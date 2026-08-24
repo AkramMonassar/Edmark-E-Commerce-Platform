@@ -1,6 +1,12 @@
 <?php
 include("include/header.php");
 require("connection/connection.php");
+
+if (!isset($_SESSION['u_id'])) {
+    header("Location: login.php");
+    exit;
+}
+$uid = (int) $_SESSION['u_id'];
 ?>
 <html>
 <head>
@@ -8,49 +14,43 @@ require("connection/connection.php");
 <link rel="stylesheet" type="text/css" href="cart.css">
 </head>
 <body>
-
 <?php
-// ===== تعديل الكمية (قبل العرض عشان تشوف التغيير فوراً) =====
 if (isset($_POST['change2'])) {
     csrf_check();
     $inputQuantity = trim($_POST['howQuantity'] ?? '');
     $id = (int) ($_POST['change1'] ?? 0);
-
     if ($inputQuantity === '') {
         echo "<p>Error: enter value for field next to change button</p>";
     } elseif (!is_numeric($inputQuantity) || (int)$inputQuantity > 10 || (int)$inputQuantity < 1) {
         echo "<p>Error: the Quantity must be a number <= 10</p>";
     } else {
         $quant = (int) $inputQuantity;
-        $result3 = mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id");
+        $result3 = mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id AND u_id = $uid");
         if (!$result3) {
             printf('Errormessage3: %s', mysqli_error($con_db));
         } elseif (mysqli_num_rows($result3) > 0) {
             $row = mysqli_fetch_assoc($result3);
             $price1 = ((int)$row['c_price']) * $quant;
-            $result4 = mysqli_query($con_db, "UPDATE cart SET c_total = $price1, c_qty = $quant WHERE id = $id");
+            $result4 = mysqli_query($con_db, "UPDATE cart SET c_total = $price1, c_qty = $quant WHERE id = $id AND u_id = $uid");
             if (!$result4) printf('Errormessage4: %s', mysqli_error($con_db));
         }
     }
 }
 
-// ===== حذف منتج واحد =====
 if (isset($_POST['delete2'])) {
     csrf_check();
     $id = (int) ($_POST['delete1'] ?? 0);
-    $result6 = mysqli_query($con_db, "DELETE FROM cart WHERE id = $id");
+    $result6 = mysqli_query($con_db, "DELETE FROM cart WHERE id = $id AND u_id = $uid");
     if (!$result6) printf('Errormessage6: %s', mysqli_error($con_db));
 }
 
-// ===== تفريغ السلة =====
 if (isset($_POST['deleteAll'])) {
     csrf_check();
-    $result7 = mysqli_query($con_db, "DELETE FROM cart");
+    $result7 = mysqli_query($con_db, "DELETE FROM cart WHERE u_id = $uid");
     if (!$result7) printf("Errormessage7: %s", mysqli_error($con_db));
 }
 
-// ===== عرض المنتجات =====
-$result2 = mysqli_query($con_db, "SELECT * FROM cart");
+$result2 = mysqli_query($con_db, "SELECT * FROM cart WHERE u_id = $uid");
 if (!$result2) {
     printf('Errormessage2: %s', mysqli_error($con_db));
 } elseif (mysqli_num_rows($result2) > 0) {
@@ -85,20 +85,18 @@ if (!$result2) {
     }
 }
 
-$result8 = mysqli_query($con_db, "SELECT COUNT(*) AS allRows FROM cart");
+$result8 = mysqli_query($con_db, "SELECT COUNT(*) AS allRows FROM cart WHERE u_id = $uid");
 if ($result8) {
     $r = mysqli_fetch_assoc($result8);
     echo "انت تملك حالياً " . $r['allRows'] . " منتجات مختارة في السلة.";
 }
 ?>
-
 <form action="cart.php" method="post">
-<input type="submit" name="deleteAll" value="تفريغ السلة">
 <?php echo csrf_field(); ?>
+<input type="submit" name="deleteAll" value="تفريغ السلة">
 </form>
 <form action="checkout.php" method="post">
 <input type="submit" value="صفحة الدفع">
-<?php echo csrf_field(); ?>
 </form>
 </body>
 </html>
