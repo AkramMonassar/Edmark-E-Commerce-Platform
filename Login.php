@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if ($email === '' || $pass === '') {
         $error = 'يرجى إدخال الإيميل وكلمة المرور';
     } else {
-        $stmt = mysqli_prepare($con_db, "SELECT u_id, u_name, u_email, u_pass FROM users WHERE u_email = ? LIMIT 1");
+        $stmt = mysqli_prepare($con_db, "SELECT u_id, u_name, u_email, u_pass, u_type FROM users WHERE u_email = ? LIMIT 1");
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
         $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 $_SESSION['user']    = $row['u_name'];
                 $_SESSION['u_email'] = $row['u_email'];
                 $_SESSION['u_id']    = $row['u_id'];
+                $_SESSION['u_type'] = $row['u_type'];
                 header("Location: index.php");
                 exit;
             }
@@ -44,35 +45,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 include("include/header.php");
 ?>
 <div class="container">
-  <div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4" data-aos="zoom-in">
-      <div class="card shadow border-0 mt-4 mb-5">
-        <div class="card-body p-4 text-center">
-          <div class="mb-3"><i class="bi bi-person-circle text-brand" style="font-size:3.5rem"></i></div>
-          <h4 class="mb-3">تسجيل الدخول</h4>
-          <?php if (isset($_GET['added'])): ?>
-            <div class="alert alert-success py-2 small">تم إنشاء الحساب بنجاح، سجل دخولك الآن</div>
-          <?php endif; ?>
-          <?php if ($error !== ''): ?>
-            <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($error, ENT_QUOTES); ?></div>
-          <?php endif; ?>
-          <form method="post">
-            <?php echo csrf_field(); ?>
-            <div class="form-floating mb-3">
-              <input type="email" name="email" class="form-control" id="email" placeholder="الإيميل" required>
-              <label for="email">الإيميل</label>
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4" data-aos="zoom-in">
+            <div class="card shadow border-0 mt-4 mb-5">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-3"><i class="bi bi-person-circle text-brand" style="font-size:3.5rem"></i></div>
+                    <h4 class="mb-3">تسجيل الدخول</h4>
+                    <?php if (isset($_GET['added'])): ?>
+                        <div class="alert alert-success py-2 small">تم إنشاء الحساب بنجاح، سجل دخولك الآن</div>
+                    <?php endif; ?>
+                    <?php if ($error !== ''): ?>
+                        <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($error, ENT_QUOTES); ?></div>
+                    <?php endif; ?>
+                    <form method="post">
+                        <?php echo csrf_field(); ?>
+                        <div class="form-floating mb-3">
+                            <input type="email" name="email" class="form-control" id="email" placeholder="الإيميل" required>
+                            <label for="email">الإيميل</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="password" name="pass" class="form-control" id="pass" placeholder="كلمة المرور" required>
+                            <label for="pass">كلمة المرور</label>
+                        </div>
+                        <button type="submit" name="login" class="btn btn-brand w-100">دخول <i class="bi bi-box-arrow-in-left"></i></button>
+                    </form>
+                    <p class="small mt-3 mb-0">ما عندك حساب؟ <a href="create_acount.php" class="text-brand fw-bold">أنشئ حسابًا</a></p>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-              <input type="password" name="pass" class="form-control" id="pass" placeholder="كلمة المرور" required>
-              <label for="pass">كلمة المرور</label>
-            </div>
-            <button type="submit" name="login" class="btn btn-brand w-100">دخول <i class="bi bi-box-arrow-in-left"></i></button>
-          </form>
-          <p class="small mt-3 mb-0">ما عندك حساب؟ <a href="create_acount.php" class="text-brand fw-bold">أنشئ حسابًا</a></p>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 <?php
 include("include/footer.php");
