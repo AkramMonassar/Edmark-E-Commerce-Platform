@@ -5,7 +5,6 @@ require("connection/connection.php");
 
 $id = (int) ($_GET['id'] ?? 0);
 
-// معالجة الإضافة قبل أي output عشان الـ redirect يشتغل
 if (isset($_POST['addtocart'])) {
     csrf_check();
     if (!isset($_SESSION['u_id'])) {
@@ -24,6 +23,8 @@ if (isset($_POST['addtocart'])) {
             mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $pid, '$name_esc', $price, $price, '$img_esc')");
         }
     }
+    header("Location: index.php?added=1");
+    exit;
 }
 
 include("include/header.php");
@@ -32,22 +33,32 @@ $result = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
 if ($result && mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_assoc($result);
 ?>
-    <center>
-        <div id="details_page">
-            <h2><?php echo htmlspecialchars($row['p_name'], ENT_QUOTES); ?></h2>
-            <img id="img2" src="<?php echo htmlspecialchars($row['p_img'], ENT_QUOTES); ?>">
-            <p><?php echo htmlspecialchars($row['p_describe'], ENT_QUOTES); ?></p>
-            <label><?php echo (int)$row['p_price']; ?>$</label>
-            <form method="post" action="details.php?id=<?php echo $id; ?>">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="id" value="<?php echo $id; ?>">
-                <input type="submit" name="addtocart" value="Add To Cart">
-            </form>
+    <div class="container my-4">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-5 text-center" data-aos="fade-left">
+                <div class="bg-white rounded-4 shadow-sm p-4">
+                    <img src="<?php echo htmlspecialchars($row['p_img'], ENT_QUOTES); ?>" class="img-fluid" style="max-height:320px" alt="<?php echo htmlspecialchars($row['p_name'], ENT_QUOTES); ?>">
+                </div>
+            </div>
+            <div class="col-md-7" data-aos="fade-right">
+                <h3 class="fw-bold"><?php echo htmlspecialchars($row['p_name'], ENT_QUOTES); ?></h3>
+                <p class="text-muted mt-3"><?php echo htmlspecialchars($row['p_describe'], ENT_QUOTES); ?></p>
+                <h4 class="text-brand fw-bold mt-3"><?php echo (int)$row['p_price']; ?>$</h4>
+                <?php if (isset($_SESSION['u_id'])): ?>
+                    <form method="post" class="mt-3">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="id" value="<?php echo $id; ?>">
+                        <button type="submit" name="addtocart" class="btn btn-brand btn-lg"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
+                    </form>
+                <?php else: ?>
+                    <a href="login.php" class="btn btn-outline-secondary btn-lg mt-3">سجل الدخول للشراء</a>
+                <?php endif; ?>
+            </div>
         </div>
-    </center>
+    </div>
 <?php
 } else {
-    echo "<center><h3>المنتج غير موجود</h3></center>";
+    echo '<div class="container"><div class="alert alert-warning mt-4">المنتج غير موجود</div></div>';
 }
 include("include/footer.php");
 ?>

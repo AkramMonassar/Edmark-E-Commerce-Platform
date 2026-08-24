@@ -8,103 +8,97 @@ if (!isset($_SESSION['u_id'])) {
     exit;
 }
 $uid = (int) $_SESSION['u_id'];
+
+if (isset($_POST['change2'])) {
+    csrf_check();
+    $inputQuantity = trim($_POST['howQuantity'] ?? '');
+    $id = (int) ($_POST['change1'] ?? 0);
+    if ($inputQuantity !== '' && is_numeric($inputQuantity) && (int)$inputQuantity >= 1 && (int)$inputQuantity <= 10) {
+        $quant = (int) $inputQuantity;
+        $r3 = mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id AND u_id = $uid");
+        if ($r3 && mysqli_num_rows($r3) > 0) {
+            $row = mysqli_fetch_assoc($r3);
+            $price1 = ((int)$row['c_price']) * $quant;
+            mysqli_query($con_db, "UPDATE cart SET c_total = $price1, c_qty = $quant WHERE id = $id AND u_id = $uid");
+        }
+    }
+}
+
+if (isset($_POST['delete2'])) {
+    csrf_check();
+    $id = (int) ($_POST['delete1'] ?? 0);
+    mysqli_query($con_db, "DELETE FROM cart WHERE id = $id AND u_id = $uid");
+}
+
+if (isset($_POST['deleteAll'])) {
+    csrf_check();
+    mysqli_query($con_db, "DELETE FROM cart WHERE u_id = $uid");
+}
+
 include("include/header.php");
+
+$result2 = mysqli_query($con_db, "SELECT * FROM cart WHERE u_id = $uid");
+$count = $result2 ? mysqli_num_rows($result2) : 0;
 ?>
-<html>
+<div class="container">
+    <h4 class="mb-4" data-aos="fade-right"><i class="bi bi-cart3 text-brand"></i> سلة الشراء</h4>
 
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="cart.css">
-</head>
+    <?php if ($count === 0): ?>
+        <div class="alert alert-light border text-center py-5" data-aos="zoom-in">
+            <i class="bi bi-cart-x text-brand" style="font-size:4rem"></i>
+            <h5 class="mt-3">سلتك فارغة حاليًا</h5>
+            <a href="index.php" class="btn btn-brand mt-2">تصفح المنتجات</a>
+        </div>
+    <?php else: ?>
+        <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>المنتج</th>
+                        <th>الاسم</th>
+                        <th>السعر</th>
+                        <th class="text-center">الكمية</th>
+                        <th>الإجمالي</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = mysqli_fetch_assoc($result2)): ?>
+                        <tr>
+                            <td><img src="<?php echo htmlspecialchars($row['c_img'], ENT_QUOTES); ?>" style="width:60px;height:60px;object-fit:contain"></td>
+                            <td><?php echo htmlspecialchars($row['c_name'], ENT_QUOTES); ?></td>
+                            <td><?php echo (int)$row['c_price']; ?>$</td>
+                            <td class="text-center">
+                                <form method="post" class="d-flex justify-content-center align-items-center gap-1">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="change1" value="<?php echo (int)$row['id']; ?>">
+                                    <input type="number" name="howQuantity" min="1" max="10" value="<?php echo (int)$row['c_qty']; ?>" class="form-control form-control-sm" style="width:70px">
+                                    <button type="submit" name="change2" class="btn btn-sm btn-outline-secondary" title="تعديل"><i class="bi bi-pencil-square"></i></button>
+                                </form>
+                            </td>
+                            <td class="fw-bold text-brand"><?php echo (int)$row['c_total']; ?>$</td>
+                            <td>
+                                <form method="post">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="delete1" value="<?php echo (int)$row['id']; ?>">
+                                    <button type="submit" name="delete2" class="btn btn-sm btn-outline-danger" title="حذف"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
 
-<body>
-    <?php
-    if (isset($_POST['change2'])) {
-        csrf_check();
-        $inputQuantity = trim($_POST['howQuantity'] ?? '');
-        $id = (int) ($_POST['change1'] ?? 0);
-        if ($inputQuantity === '') {
-            echo "<p>Error: enter value for field next to change button</p>";
-        } elseif (!is_numeric($inputQuantity) || (int)$inputQuantity > 10 || (int)$inputQuantity < 1) {
-            echo "<p>Error: the Quantity must be a number <= 10</p>";
-        } else {
-            $quant = (int) $inputQuantity;
-            $result3 = mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id AND u_id = $uid");
-            if (!$result3) {
-                printf('Errormessage3: %s', mysqli_error($con_db));
-            } elseif (mysqli_num_rows($result3) > 0) {
-                $row = mysqli_fetch_assoc($result3);
-                $price1 = ((int)$row['c_price']) * $quant;
-                $result4 = mysqli_query($con_db, "UPDATE cart SET c_total = $price1, c_qty = $quant WHERE id = $id AND u_id = $uid");
-                if (!$result4) printf('Errormessage4: %s', mysqli_error($con_db));
-            }
-        }
-    }
-
-    if (isset($_POST['delete2'])) {
-        csrf_check();
-        $id = (int) ($_POST['delete1'] ?? 0);
-        $result6 = mysqli_query($con_db, "DELETE FROM cart WHERE id = $id AND u_id = $uid");
-        if (!$result6) printf('Errormessage6: %s', mysqli_error($con_db));
-    }
-
-    if (isset($_POST['deleteAll'])) {
-        csrf_check();
-        $result7 = mysqli_query($con_db, "DELETE FROM cart WHERE u_id = $uid");
-        if (!$result7) printf("Errormessage7: %s", mysqli_error($con_db));
-    }
-
-    $result2 = mysqli_query($con_db, "SELECT * FROM cart WHERE u_id = $uid");
-    if (!$result2) {
-        printf('Errormessage2: %s', mysqli_error($con_db));
-    } elseif (mysqli_num_rows($result2) > 0) {
-        while ($row = mysqli_fetch_assoc($result2)) {
-    ?>
-            <div id="product_details">
-                <div id="pro_det1">
-                    <img id='img3' src='<?php echo htmlspecialchars($row['c_img'], ENT_QUOTES); ?>'>
-                </div>
-                <br>
-                <div id="pro_det2">
-                    <span>اسم المنتج: </span>&nbsp;&nbsp;<?php echo htmlspecialchars($row['c_name'], ENT_QUOTES); ?><br>
-                    <span>سعر المنتج: </span>&nbsp;&nbsp;<?php echo $row['c_price']; ?>$<br>
-                    <span>كمية المنتج: </span>&nbsp;&nbsp;<?php echo $row['c_qty']; ?><br>
-                    <span>السعر الإجمالي: </span>&nbsp;&nbsp;<?php echo $row['c_total']; ?>$
-                </div>
-                <br>
-                <form action="cart.php" method="post">
-                    <?php echo csrf_field(); ?>
-                    تغير الكمية: <input type='number' placeholder="<=10" name="howQuantity">
-                    <input type="hidden" value="<?php echo (int)$row['id']; ?>" name="change1">
-                    <input type="submit" value="تعديل" name="change2">
-                </form>
-                <br>
-                <form action="cart.php" method="post">
-                    <?php echo csrf_field(); ?>
-                    <input type="hidden" value="<?php echo (int)$row['id']; ?>" name="delete1">
-                    <input type="submit" value="حذف المنتج" name="delete2">
-                </form>
-            </div>
-    <?php
-        }
-    }
-
-    $result8 = mysqli_query($con_db, "SELECT COUNT(*) AS allRows FROM cart WHERE u_id = $uid");
-    if ($result8) {
-        $r = mysqli_fetch_assoc($result8);
-        echo "انت تملك حالياً " . $r['allRows'] . " منتجات مختارة في السلة.";
-    }
-    ?>
-    <form action="cart.php" method="post">
-        <?php echo csrf_field(); ?>
-        <input type="submit" name="deleteAll" value="تفريغ السلة">
-    </form>
-    <form action="checkout.php" method="post">
-        <input type="submit" value="صفحة الدفع">
-    </form>
-</body>
-
-</html>
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" data-aos="fade-up">
+            <form method="post">
+                <?php echo csrf_field(); ?>
+                <button type="submit" name="deleteAll" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> تفريغ السلة</button>
+            </form>
+            <a href="checkout.php" class="btn btn-brand btn-lg"><i class="bi bi-credit-card"></i> إتمام الدفع</a>
+        </div>
+    <?php endif; ?>
+</div>
 <?php
 include("include/footer.php");
 ?>
