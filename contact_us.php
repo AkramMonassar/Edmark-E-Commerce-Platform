@@ -22,6 +22,7 @@ if(isset($_SESSION['user'])) {
 // معالجة النموذج عند الإرسال
 $message_sent = false;
 if(isset($_POST['ارسال'])) {
+    csrf_check();
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
@@ -53,9 +54,10 @@ if($message_sent) {
     <h4> الموضوع:</h4>
     <textarea name="subject" style="width:100%;height:200px;"></textarea>
     <br/><br/>
-    <input type="submit" name="ارسال" value="إرسال">        
-    </form>';
+    <input type="submit" name="ارسال" value="إرسال">' . csrf_field() . '        
+    </form>'; 
 }
+
 ?>    
 </div>   
 </body>

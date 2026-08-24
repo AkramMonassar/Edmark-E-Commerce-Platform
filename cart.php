@@ -12,6 +12,7 @@ require("connection/connection.php");
 <?php
 // ===== تعديل الكمية (قبل العرض عشان تشوف التغيير فوراً) =====
 if (isset($_POST['change2'])) {
+    csrf_check();
     $inputQuantity = trim($_POST['howQuantity'] ?? '');
     $id = (int) ($_POST['change1'] ?? 0);
 
@@ -35,6 +36,7 @@ if (isset($_POST['change2'])) {
 
 // ===== حذف منتج واحد =====
 if (isset($_POST['delete2'])) {
+    csrf_check();
     $id = (int) ($_POST['delete1'] ?? 0);
     $result6 = mysqli_query($con_db, "DELETE FROM cart WHERE id = $id");
     if (!$result6) printf('Errormessage6: %s', mysqli_error($con_db));
@@ -42,6 +44,7 @@ if (isset($_POST['delete2'])) {
 
 // ===== تفريغ السلة =====
 if (isset($_POST['deleteAll'])) {
+    csrf_check();
     $result7 = mysqli_query($con_db, "DELETE FROM cart");
     if (!$result7) printf("Errormessage7: %s", mysqli_error($con_db));
 }
@@ -66,12 +69,14 @@ if (!$result2) {
     </div>
     <br>
     <form action="cart.php" method="post">
+        <?php echo csrf_field(); ?>
         تغير الكمية: <input type='number' placeholder="<=10" name="howQuantity">
         <input type="hidden" value="<?php echo (int)$row['id']; ?>" name="change1">
         <input type="submit" value="تعديل" name="change2">
     </form>
     <br>
     <form action="cart.php" method="post">
+        <?php echo csrf_field(); ?>
         <input type="hidden" value="<?php echo (int)$row['id']; ?>" name="delete1">
         <input type="submit" value="حذف المنتج" name="delete2">
     </form>
@@ -89,9 +94,11 @@ if ($result8) {
 
 <form action="cart.php" method="post">
 <input type="submit" name="deleteAll" value="تفريغ السلة">
+<?php echo csrf_field(); ?>
 </form>
 <form action="checkout.php" method="post">
 <input type="submit" value="صفحة الدفع">
+<?php echo csrf_field(); ?>
 </form>
 </body>
 </html>

@@ -2,7 +2,8 @@
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
     require("connection/connection.php");
-
+    require_once __DIR__ . '/include/csrf.php';
+    csrf_check();
     $name  = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $pass  = $_POST['pass'] ?? '';
@@ -46,6 +47,7 @@ if (!empty($errors)) {
 }
 ?>
 <form method="post">
+<?php echo csrf_field(); ?>
 <p>الاسم:</p>
 <input type="text" name="name" required>
 <p>الإيميل:</p>

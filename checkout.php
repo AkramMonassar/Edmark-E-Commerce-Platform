@@ -7,6 +7,8 @@ if (isset($_POST['reset'])) {
 $msg = '';
 if (isset($_POST['submit'])) {
     require('connection/connection.php');
+    require_once __DIR__ . '/include/csrf.php';
+    csrf_check();
 
     if (empty($_POST['cardNumber']) || empty($_POST['cvc']) || empty($_POST['fullName']) || empty($_POST['expire']) || empty($_POST['amount'])) {
         $msg = "خطأ : كل الحقول يجب ان تملأ";
@@ -43,8 +45,9 @@ include("include/header.php");
 </head>
 <body>
 <h2>استمارة الدفع</h2>
-<?php if ($msg !== '') echo "<p>$msg</p>"; ?>
+<?php if ($msg !== '') echo "<p>$msg</p>";  ?>
 <form action="checkout.php" method="post">
+<?php echo csrf_field(); ?>    
 رقم البطاقة:<br/>
 <input type="text" name="cardNumber" class="form-control"><br/>
 CVC:<br/>
@@ -58,6 +61,7 @@ CVC:<br/>
 <input type="submit" name="submit" value="شراء">
 <input type="submit" name="reset" value="الغاء">
 </form>
+
 </body>
 </html>
 <?php

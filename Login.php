@@ -1,8 +1,10 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-
+require_once __DIR__ . '/include/csrf.php';
 $error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    csrf_check();
     require("connection/connection.php");
 
     $email = trim($_POST['email'] ?? '');
@@ -51,6 +53,7 @@ if (isset($_GET['added'])) echo "<p style='color:green'>تم إنشاء الحس
 if ($error !== '') echo "<p style='color:red'>$error</p>";
 ?>
 <form method="post">
+<?php echo csrf_field(); ?>    
 <p>الإيميل:</p>
 <input type="email" name="email" required>
 <p>كلمة المرور:</p>

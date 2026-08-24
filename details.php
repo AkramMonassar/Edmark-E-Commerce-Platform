@@ -5,6 +5,7 @@ require("connection/connection.php");
 $id = (int) ($_GET['id'] ?? 0);
 
 if (isset($_POST['addtocart'])) {
+    csrf_check();
     $pid = (int) $_POST['id'];
     $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $pid");
     if ($res && ($row = mysqli_fetch_assoc($res))) {
@@ -28,8 +29,9 @@ if ($result && mysqli_num_rows($result) > 0) {
     <img id="img2" src="<?php echo htmlspecialchars($row['p_img'], ENT_QUOTES); ?>">
     <p><?php echo $row['p_describe']; ?></p>
     <label><?php echo $row['p_price']; ?>$</label>
-    <form method="post" action="details.php?id=<?php echo $id; ?>">
+    <form method="post" action="details.php?id=<?php echo $id; ?>"> 
         <input type="hidden" name="id" value="<?php echo $id; ?>">
+        <?php echo csrf_field(); ?>  
         <input type="submit" name="addtocart" value="Add To Cart">
     </form>
 </div>
