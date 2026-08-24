@@ -3,13 +3,9 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
 
-// إضافة للسلة قبل أي output + إعادة توجيه (PRG) لمنع الإضافة المكررة عند التحديث
 if (isset($_POST['addtocart'])) {
     csrf_check();
-    if (!isset($_SESSION['u_id'])) {
-        header("Location: login.php");
-        exit;
-    }
+    if (!isset($_SESSION['u_id'])) { header("Location: login.php"); exit; }
     $uid = (int) $_SESSION['u_id'];
     $id  = (int) $_POST['id'];
     $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
@@ -29,11 +25,10 @@ include("include/header.php");
 ?>
 
 <?php if (isset($_GET['added'])): ?>
-<div class="container"><div class="alert alert-success py-2">تمت إضافة المنتج إلى السلة ✅</div></div>
+<div class="container"><div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> تمت إضافة المنتج إلى السلة</div></div>
 <?php endif; ?>
 
-<!-- سلايدر Bootstrap -->
-<div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+<div id="heroCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-aos="zoom-in">
   <div class="carousel-indicators">
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
     <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
@@ -54,20 +49,24 @@ include("include/header.php");
   </button>
 </div>
 
-<!-- شبكة المنتجات -->
 <div class="container" id="products">
-  <h4 class="mb-3"><i class="bi bi-basket2 text-brand"></i> منتجاتنا</h4>
+  <h4 class="mb-4" data-aos="fade-right"><i class="bi bi-basket2 text-brand"></i> منتجاتنا</h4>
   <div class="row g-4">
     <?php
     $result = mysqli_query($con_db, "SELECT * FROM product");
+    $i = 0;
     if ($result && mysqli_num_rows($result) > 0) {
         while ($p = mysqli_fetch_assoc($result)) {
-            $pid = (int) $p['p_id'];
+            $pid   = (int) $p['p_id'];
+            $delay = ($i % 4) * 100;   // حركة متدرجة: كل بطاقة تلي الثانية
+            $i++;
     ?>
-    <div class="col-6 col-md-4 col-lg-3">
+    <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
       <div class="card h-100 shadow-sm">
         <a href="details.php?id=<?php echo $pid; ?>">
-          <img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>">
+          <div class="img-wrap">
+            <img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" class="w-100" alt="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>">
+          </div>
         </a>
         <div class="card-body text-center d-flex flex-column">
           <h6 class="card-title"><?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?></h6>

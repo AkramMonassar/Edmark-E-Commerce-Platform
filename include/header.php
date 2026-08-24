@@ -23,19 +23,55 @@ if (isset($_SESSION['u_id'])) {
 <title>إدمارك | متجر المنتجات العشبية</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 <style>
-:root { --brand:#2e7d32; }
+:root { --brand:#2e7d32; --brand-dark:#1b5e20; }
+html { scroll-behavior:smooth; }
 .bg-brand { background-color: var(--brand) !important; }
 .text-brand { color: var(--brand) !important; }
+
+/* أزرار تنبض عند اللمس */
+.btn { transition: all .25s ease; }
+.btn:active { transform: scale(.95); }
 .btn-brand { background-color: var(--brand); border-color: var(--brand); color:#fff; }
-.btn-brand:hover { background-color:#1b5e20; border-color:#1b5e20; color:#fff; }
-.card-img-top { height:200px; object-fit:contain; padding:1rem; background:#fff; }
-.hero-img { max-height:320px; object-fit:contain; background:#e8f5e9; }
+.btn-brand:hover { background-color: var(--brand-dark); border-color: var(--brand-dark); color:#fff; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(27,94,32,.35); }
+
+/* شريط التنقل: ظل يظهر عند التمرير + خط ذهبي ينزلق تحت الروابط */
+.navbar { transition: box-shadow .3s ease; }
+.navbar.scrolled { box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+.nav-link { position:relative; }
+.nav-link::after { content:''; position:absolute; right:0; bottom:2px; width:0; height:2px; background:#ffd54f; transition: width .3s ease; }
+.nav-link:hover::after { width:100%; }
+
+/* بطاقات المنتجات: ترتفع وتتنفس عند التمرير */
+.card { transition: transform .35s ease, box-shadow .35s ease; border:0; border-radius:1rem; overflow:hidden; }
+.card:hover { transform: translateY(-10px); box-shadow: 0 16px 32px rgba(0,0,0,.14); }
+.img-wrap { overflow:hidden; background:#fff; }
+.img-wrap img { height:200px; object-fit:contain; padding:1rem; transition: transform .5s ease; }
+.card:hover .img-wrap img { transform: scale(1.08) rotate(1deg); }
+
+/* السلايدر: تأثير Ken Burns (الصورة تتنفس بالتقريب) */
+.hero-img { max-height:340px; object-fit:contain; background:linear-gradient(180deg,#e8f5e9,#f6fbf6); }
+.carousel-item.active .hero-img { animation: kenburns 6s ease-out forwards; }
+@keyframes kenburns { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+/* شارة السلة: نبضة قلب */
+.badge.pulse { animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.25)} 100%{transform:scale(1)} }
+
+/* زر العودة للأعلى */
+#toTop { position:fixed; left:20px; bottom:20px; width:46px; height:46px; border-radius:50%; border:0; background:var(--brand); color:#fff; font-size:20px; opacity:0; pointer-events:none; transition: all .3s; box-shadow:0 6px 16px rgba(0,0,0,.25); z-index:1050; }
+#toTop.show { opacity:1; pointer-events:auto; }
+#toTop:hover { background:var(--brand-dark); transform: translateY(-4px); }
+
+/* التنبيهات تنزل بنعومة */
+.alert { animation: fadeDown .5s ease; }
+@keyframes fadeDown { from { opacity:0; transform: translateY(-12px); } to { opacity:1; transform:none; } }
 </style>
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-brand sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark bg-brand sticky-top" id="mainNav">
   <div class="container">
     <a class="navbar-brand fw-bold" href="index.php"><i class="bi bi-leaf"></i> EDMARK</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -53,7 +89,7 @@ if (isset($_SESSION['u_id'])) {
           <a class="nav-link position-relative" href="cart.php">
             <i class="bi bi-cart3 fs-5"></i>
             <?php if ($cart_count > 0): ?>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning"><?php echo $cart_count; ?></span>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning pulse"><?php echo $cart_count; ?></span>
             <?php endif; ?>
             <span class="d-none d-lg-inline">السلة</span>
           </a>
