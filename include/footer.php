@@ -50,5 +50,65 @@ window.addEventListener('scroll', () => {
 });
 toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
 </script>
+<script>
+// ===== AJAX: تحديث محدد بدون إعادة تحميل =====
+async function api(action, data = {}, method = 'POST') {
+    if (method === 'GET') {
+        const res = await fetch('api/cart.php?action=' + action);
+        return res.json();
+    }
+    const body = new FormData();
+    body.append('action', action);
+    body.append('csrf_token', window.CSRF || '');
+    for (const k in data) body.append(k, data[k]);
+    const res = await fetch('api/cart.php', { method: 'POST', body });
+    return res.json();
+}
+
+// التحديث المحدد: رقمين بالناف بار فقط
+function updateCartUI(s) {
+    const badge = document.getElementById('cartBadge');
+    const total = document.getElementById('cartTotal');
+    if (badge) { badge.textContent = s.count; badge.classList.toggle('d-none', s.count === 0); }
+    if (total) { total.textContent = s.total + '$'; total.classList.toggle('d-none', s.total === 0); }
+}
+
+// رسالة منبثقة خفيفة
+function toast(msg, type = 'success') {
+    const t = document.createElement('div');
+    t.className = 'alert alert-' + type + ' position-fixed top-0 start-50 translate-middle-x mt-3 py-2 shadow';
+    t.style.zIndex = 2000;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+}
+
+// حوّل فورمات الإضافة إلى AJAX
+document.querySelectorAll('.js-add-form').forEach(form => {
+    form.addEventListener('submit', async e => {
+        e.preventDefault();                      // 1) أوقف إعادة التحميل
+        const id = form.querySelector('[name="id"]').value;
+        const r = await api('add', { id });      // 2) اسأل السيرفر بالخلفية
+        if (r.ok) { updateCartUI(r); toast('تمت الإضافة إلى السلة ✅'); }          // 3) حدّث الجزء المحدد
+        else if (r.error === 'login_required') location.href = 'login.php';
+        else if (r.error === 'already_in_cart') toast('المنتج موجود في سلتك بالفعل', 'warning');
+        else toast('حدث خطأ غير متوقع', 'danger');
+    });
+});
+
+// تدريب محلول: حذف منتج بدون تحميل + حذف الصف من الجدول مباشرة
+document.querySelectorAll('form [name="delete2"]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+        e.preventDefault();
+        const id = btn.form.querySelector('[name="delete1"]').value;
+        const r = await api('delete', { id });
+        if (r.ok) {
+            btn.closest('tr').remove();   // حذف الصف من الجدول فقط!
+            updateCartUI(r);
+            toast('تم حذف المنتج');
+        }
+    });
+});
+</script>
 </body>
 </html>

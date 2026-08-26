@@ -45,7 +45,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                 <p class="text-muted mt-3"><?php echo htmlspecialchars($row['p_describe'], ENT_QUOTES); ?></p>
                 <h4 class="text-brand fw-bold mt-3"><?php echo (int)$row['p_price']; ?>$</h4>
                 <?php if (isset($_SESSION['u_id'])): ?>
-                    <form method="post" class="mt-3">
+                    <form method="post" class="mt-3 js-add-form">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="id" value="<?php echo $id; ?>">
                         <button type="submit" name="addtocart" class="btn btn-brand btn-lg"><i class="bi bi-cart-plus"></i> أضف للسلة</button>

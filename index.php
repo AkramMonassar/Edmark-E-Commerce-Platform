@@ -72,7 +72,7 @@ include("include/header.php");
           <h6 class="card-title"><?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?></h6>
           <p class="fw-bold text-brand mb-2"><?php echo (int) $p['p_price']; ?>$</p>
           <?php if (isset($_SESSION['u_id'])): ?>
-          <form method="post" action="index.php" class="mt-auto">
+          <form method="post" action="index.php" class="js-add-form mt-auto">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="id" value="<?php echo $pid; ?>">
             <button type="submit" name="addtocart" class="btn btn-brand btn-sm w-100"><i class="bi bi-cart-plus"></i> أضف للسلة</button>

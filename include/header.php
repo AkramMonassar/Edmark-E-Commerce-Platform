@@ -211,6 +211,7 @@ if (isset($_SESSION['u_id'])) {
             }
         }
     </style>
+    <script>window.CSRF = '<?php echo csrf_token(); ?>';</script>
 </head>
 
 <body class="bg-light">
@@ -235,12 +236,10 @@ if (isset($_SESSION['u_id'])) {
                             <?php if ($cart_count > 0): ?>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning pulse"><?php echo $cart_count; ?></span>
                             <?php endif; ?>
-                            <span class="d-none d-lg-inline">السلة</span>
+                            <span id="cartBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning pulse <?php echo $cart_count === 0 ? 'd-none' : ''; ?>"><?php echo $cart_count; ?></span>
                         </a>
                     </li>
-                    <?php if ($cart_total > 0): ?>
-                        <li class="nav-item"><span class="badge text-bg-light text-brand"><?php echo $cart_total; ?>$</span></li>
-                    <?php endif; ?>
+                    <span id="cartTotal" class="badge text-bg-light text-brand <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
                     <?php if (isset($_SESSION['user'])): ?>
                         <li class="nav-item"><span class="nav-link text-warning">أهلاً، <?php echo htmlspecialchars($_SESSION['user'], ENT_QUOTES); ?></span></li>
                         <li class="nav-item"><a class="nav-link" href="logout.php">تسجيل الخروج</a></li>
@@ -257,3 +256,5 @@ if (isset($_SESSION['u_id'])) {
     </nav>
 
     <main class="py-4">
+
+    
