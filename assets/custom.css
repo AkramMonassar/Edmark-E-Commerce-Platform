@@ -1,0 +1,93 @@
+/* ===== تعديلات خاصة بمشروع Edmark ===== */
+
+/* 1) إصلاح قطع شارة السلة بالناف بار */
+.navbar {
+    overflow: visible !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+/* 2) إبعاد شارة السلة عن الحافة */
+#cartBadge {
+    top: 3px !important;
+    right: 17px !important;
+    font-size: 0.80rem;
+    padding: 0.25em 0.5em;
+}
+
+/* 3) تحسين ظهور المجموع */
+#cartTotal {
+    font-size: 0.85rem;
+    padding: 0.35em 0.65em;
+}
+
+/* 4) تعديلات عامة */
+.navbar-brand {
+    font-size: 1.4rem !important;
+    letter-spacing: 1px;
+}
+
+/* 5) تحسين المسافات بالناف بار على الموبايل */
+@media (max-width: 991.98px) {
+    .navbar .nav-link {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* شعار إدمارك مرسوم بالكود */
+.css-logo {
+    background: #fff;
+    padding: .4rem .7rem;
+    border-radius: .5rem;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.logo-text {
+    font-family: 'Times New Roman', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #2b3990;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    direction: ltr;
+}
+/* حرف D الأحمر بشكله المميز */
+.logo-d {
+    display: inline-block;
+    width: .65em;
+    height: .62em;
+    background: #e8112d;
+    border-radius: .1em .55em .55em .1em;
+    margin: 0 1px;
+}
+.logo-text sup { font-size: .4em; color: #2b3990; }
+/* الشريط الملون الرباعي تحت الاسم */
+.logo-stripe {
+    display: flex;
+    height: 4px;
+    margin-top: 3px;
+}
+.logo-stripe i { flex: 1; }
+
+/* ===== ناف بار أبيض بهوية إدمارك ===== */
+#mainNav { box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+
+/* شريط بألوان الشعار الأربعة تحت الناف بار — يربط الهويتين */
+#mainNav::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e8112d 0 25%, #ffc00e 0 50%, #00a757 0 75%, #00a9e0 0 100%);
+}
+
+/* ===== روابط بلون يناسب الخلفية الخضراء ===== */
+#mainNav .nav-link { color: rgba(255, 255, 255, 0.92); font-weight: 600; }
+#mainNav .nav-link:hover { color: #ffd54f; }
+#mainNav .nav-link::after { background: #ffd54f; }
+
+/* الشعار بدون علبة — الناف بار نفسه أبيض الحين */
+.css-logo { background: transparent; box-shadow: none; padding: .25rem 0; direction: ltr; }
+.logo-text, .logo-text sup { color: #fff; }
+.logo-d { background: #ff3b4f; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35); }
