@@ -9,19 +9,19 @@ $uid = (int) $_SESSION['u_id'];
 // ================= مزودو الدفع (عدّل بحرية) =================
 $providers = [
     'wallets' => [
-        'mahfazati'   => 'محفظتي (بنك التضامن)',
-        'jawwali'     => 'جوالي',
+        'mahfazati'   => 'محفظتي',
+        'jawwali'     => 'محفظة جوالي',
         'onecash'     => 'ون كاش (One Cash)',
-        'karimi'      => 'كريمي فلوس / محفظة الكريمي',
-        'cash'        => 'كاش (تمكين)',
-        'floosak'     => 'فلوسك',
+        'karimi'      => 'كريمي حاسب ',
+        'cash'        => 'محفظة كاش',
+        'floosak'     => 'محفظة فلوسك',
         'mobilemoney' => 'موبايل موني (Mobile Money)',
-        'jayeb'       => 'جيب (الحزمي)',
+        'jayeb'       => 'محفظة جيب',
         'mfloos'      => 'أم فلوس (M-Floos)',
         'yemenwallet' => 'يمن والت (Yemen Wallet)',
         'yemenipay'   => 'يمن باي (Yemeni Pay)',
-        'shamil'      => 'شامل',
-        'sabacash'    => 'سبأ كاش (بنك سبأ الإسلامي)',
+        'shamil'      => 'محفظة الشامل',
+        'sabacash'    => 'سبأ كاش',
     ],
     'exchange' => [
         'alkarimi'  => 'بنك الكريمي',

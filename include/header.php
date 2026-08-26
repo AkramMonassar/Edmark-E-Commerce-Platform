@@ -219,9 +219,14 @@ if (isset($_SESSION['u_id'])) {
 
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-brand sticky-top" id="mainNav">
+    <nav class="navbar navbar-expand-lg navbar-light bg-brand sticky-top" id="mainNav">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.php"><i class="bi bi-leaf"></i> EDMARK</a>
+            <a class="navbar-brand css-logo" href="index.php" aria-label="EDMARK">
+                <span class="logo-text">E<span class="logo-d"></span>MARK<sup>®</sup></span>
+                <span class="logo-stripe">
+                    <i style="background:#e8112d"></i><i style="background:#ffc00e"></i><i style="background:#00a757"></i><i style="background:#00a9e0"></i>
+                </span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -241,17 +246,16 @@ if (isset($_SESSION['u_id'])) {
                         </a>
                     </li>
                     <li class="nav-item">
-                        <span id="cartTotal" class="badge text-bg-light text-brand <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
+                        <span id="cartTotal" class="badge bg-white text-brand border <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
                     </li>
                     <?php if (isset($_SESSION['user'])): ?>
-                        <li class="nav-item"><span class="nav-link text-warning">أهلاً، <?php echo htmlspecialchars($_SESSION['user'], ENT_QUOTES); ?></span></li>
-                        <?php if (isset($_SESSION['u_type']) && $_SESSION['u_type'] === 'admin'): ?>
-                            <li class="nav-item"><a class="nav-link text-warning" href="admin.php"><i class="bi bi-speedometer2"></i> لوحة التحكم</a></li>
+                        <li class="nav-item"><span class="nav-link fw-bold">أهلاً، <?php echo htmlspecialchars($_SESSION['user'], ENT_QUOTES); ?></span></li> <?php if (isset($_SESSION['u_type']) && $_SESSION['u_type'] === 'admin'): ?>
+                            <li class="nav-item"><a class="nav-link text-danger" href="admin.php"><i class="bi bi-speedometer2"></i> لوحة التحكم</a></li>
                         <?php endif; ?>
                         <li class="nav-item"><a class="nav-link" href="logout.php">تسجيل الخروج</a></li>
                     <?php else: ?>
                         <li class="nav-item"><a class="nav-link" href="login.php">تسجيل الدخول</a></li>
-                        <li class="nav-item ms-lg-2"><a class="btn btn-outline-light btn-sm" href="create_acount.php">حساب جديد</a></li>
+                        <li class="nav-item ms-lg-2"><a class="btn btn-brand btn-sm" href="create_acount.php">حساب جديد</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
