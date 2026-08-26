@@ -34,81 +34,148 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
-// ظهور العناصر بانسيابية أثناء التصفح (مع حماية إذا ما حمل النت)
-if (window.AOS) {
-    AOS.init({ once:true, duration:700, offset:60, easing:'ease-out-cubic' });
-} else {
+  /* ===== 1) الحركة والتمرير ===== */
+  if (window.AOS) {
+    AOS.init({
+      once: true,
+      duration: 700,
+      offset: 60,
+      easing: 'ease-out-cubic'
+    });
+  } else {
     document.querySelectorAll('[data-aos]').forEach(el => el.removeAttribute('data-aos'));
-}
-
-// ظل الشريط + زر العودة للأعلى
-const nav = document.getElementById('mainNav');
-const toTop = document.getElementById('toTop');
-window.addEventListener('scroll', () => {
+  }
+  const nav = document.getElementById('mainNav');
+  const toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 30);
     toTop.classList.toggle('show', window.scrollY > 300);
-});
-toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
-</script>
-<script>
-// ===== AJAX: تحديث محدد بدون إعادة تحميل =====
-async function api(action, data = {}, method = 'POST') {
+  });
+  toTop.addEventListener('click', () => window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  }));
+
+  /* ===== 2) أساسيات AJAX ===== */
+  async function api(action, data = {}, method = 'POST') {
     if (method === 'GET') {
-        const res = await fetch('api/cart.php?action=' + action);
-        return res.json();
+      const res = await fetch('api/cart.php?action=' + action);
+      return res.json();
     }
     const body = new FormData();
     body.append('action', action);
     body.append('csrf_token', window.CSRF || '');
     for (const k in data) body.append(k, data[k]);
-    const res = await fetch('api/cart.php', { method: 'POST', body });
+    const res = await fetch('api/cart.php', {
+      method: 'POST',
+      body
+    });
     return res.json();
-}
+  }
 
-// التحديث المحدد: رقمين بالناف بار فقط
-function updateCartUI(s) {
+  function updateCartUI(s) {
     const badge = document.getElementById('cartBadge');
     const total = document.getElementById('cartTotal');
-    if (badge) { badge.textContent = s.count; badge.classList.toggle('d-none', s.count === 0); }
-    if (total) { total.textContent = s.total + '$'; total.classList.toggle('d-none', s.total === 0); }
-}
+    if (badge) {
+      badge.textContent = s.count;
+      badge.classList.toggle('d-none', s.count === 0);
+    }
+    if (total) {
+      total.textContent = s.total + '$';
+      total.classList.toggle('d-none', s.total === 0);
+    }
+  }
 
-// رسالة منبثقة خفيفة
-function toast(msg, type = 'success') {
+  function toast(msg, type = 'success') {
     const t = document.createElement('div');
     t.className = 'alert alert-' + type + ' position-fixed top-0 start-50 translate-middle-x mt-3 py-2 shadow';
     t.style.zIndex = 2000;
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 2500);
-}
+  }
 
-// حوّل فورمات الإضافة إلى AJAX
-document.querySelectorAll('.js-add-form').forEach(form => {
+  /* ===== 3) إضافة للسلة بدون تحميل ===== */
+  document.querySelectorAll('.js-add-form').forEach(form => {
     form.addEventListener('submit', async e => {
-        e.preventDefault();                      // 1) أوقف إعادة التحميل
-        const id = form.querySelector('[name="id"]').value;
-        const r = await api('add', { id });      // 2) اسأل السيرفر بالخلفية
-        if (r.ok) { updateCartUI(r); toast('تمت الإضافة إلى السلة ✅'); }          // 3) حدّث الجزء المحدد
-        else if (r.error === 'login_required') location.href = 'login.php';
-        else if (r.error === 'already_in_cart') toast('المنتج موجود في سلتك بالفعل', 'warning');
-        else toast('حدث خطأ غير متوقع', 'danger');
+      e.preventDefault();
+      const id = form.querySelector('[name="id"]').value;
+      const r = await api('add', {
+        id
+      });
+      if (r.ok) {
+        updateCartUI(r);
+        toast('تمت الإضافة إلى السلة ✅');
+      } else if (r.error === 'login_required') location.href = 'login.php';
+      else if (r.error === 'already_in_cart') toast('المنتج موجود في سلتك بالفعل', 'warning');
+      else toast('حدث خطأ غير متوقع', 'danger');
     });
-});
+  });
 
-// تدريب محلول: حذف منتج بدون تحميل + حذف الصف من الجدول مباشرة
-document.querySelectorAll('form [name="delete2"]').forEach(btn => {
+  /* ===== 4) حذف منتج بدون تحميل ===== */
+  document.querySelectorAll('form [name="delete2"]').forEach(btn => {
     btn.addEventListener('click', async e => {
-        e.preventDefault();
-        const id = btn.form.querySelector('[name="delete1"]').value;
-        const r = await api('delete', { id });
-        if (r.ok) {
-            btn.closest('tr').remove();   // حذف الصف من الجدول فقط!
-            updateCartUI(r);
-            toast('تم حذف المنتج');
+      e.preventDefault();
+      const tbody = btn.closest('tbody');
+      const id = btn.form.querySelector('[name="delete1"]').value;
+      const r = await api('delete', {
+        id
+      });
+      if (r.ok) {
+        btn.closest('tr').remove();
+        if (tbody && !tbody.querySelector('tr')) location.reload(); // لإظهار حالة "السلة فارغة"
+        else {
+          updateCartUI(r);
+          toast('تم حذف المنتج');
         }
+      }
     });
-});
+  });
+
+  /* ===== 5) العدّاد الحديث (+ / −) ===== */
+  document.querySelectorAll('.qty-stepper').forEach(st => {
+    const id = st.dataset.id;
+    const val = st.querySelector('.qty-val');
+    const plus = st.querySelector('.plus');
+    const minus = st.querySelector('.minus');
+
+    const paint = q => {
+      val.textContent = q;
+      val.classList.remove('pop');
+      void val.offsetWidth;
+      val.classList.add('pop');
+      minus.disabled = q <= 1;
+      plus.disabled = q >= 10;
+    };
+
+    const send = q => {
+      paint(q);
+      api('qty', {
+        id,
+        qty: q
+      }).then(r => {
+        if (r.ok) {
+          const tr = st.closest('tr');
+          const price = parseInt(tr.querySelector('.cell-price').textContent, 10) || 0;
+          const cell = tr.querySelector('.cell-total');
+          cell.textContent = (price * q) + '$';
+          cell.classList.remove('flash');
+          void cell.offsetWidth;
+          cell.classList.add('flash');
+          updateCartUI(r);
+        } else {
+          toast('تعذر تحديث الكمية', 'danger');
+        }
+      });
+    };
+
+    minus.disabled = (+val.textContent) <= 1;
+    plus.disabled = (+val.textContent) >= 10;
+
+    plus.addEventListener('click', () => send(Math.min(10, +val.textContent + 1)));
+    minus.addEventListener('click', () => send(Math.max(1, +val.textContent - 1)));
+  });
 </script>
 </body>
+
 </html>

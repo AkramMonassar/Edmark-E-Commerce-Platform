@@ -67,15 +67,15 @@ $count = $result2 ? mysqli_num_rows($result2) : 0;
                         <tr>
                             <td><img src="<?php echo htmlspecialchars($row['c_img'], ENT_QUOTES); ?>" style="width:60px;height:60px;object-fit:contain"></td>
                             <td><?php echo htmlspecialchars($row['c_name'], ENT_QUOTES); ?></td>
-                            <td><?php echo (int)$row['c_price']; ?>$</td>
+                            <td class="cell-price"><?php echo (int)$row['c_price']; ?>$</td>
                             <td class="text-center">
-                                <form method="post" class="d-flex justify-content-center align-items-center gap-1">
-                                    <?php echo csrf_field(); ?>
-                                    <input type="hidden" name="change1" value="<?php echo (int)$row['id']; ?>">
-                                    <input type="number" name="howQuantity" min="1" max="10" value="<?php echo (int)$row['c_qty']; ?>" class="form-control form-control-sm" style="width:70px">
-                                    <button type="submit" name="change2" class="btn btn-sm btn-outline-secondary" title="تعديل"><i class="bi bi-pencil-square"></i></button>
-                                </form>
+                                <div class="qty-stepper" data-id="<?php echo (int)$row['id']; ?>">
+                                    <button type="button" class="qty-btn minus" aria-label="إنقاص الكمية">−</button>
+                                    <span class="qty-val"><?php echo (int)$row['c_qty']; ?></span>
+                                    <button type="button" class="qty-btn plus" aria-label="زيادة الكمية">+</button>
+                                </div>
                             </td>
+                            <td class="cell-total fw-bold text-brand"><?php echo (int)$row['c_total']; ?>$</td>
                             <td class="fw-bold text-brand"><?php echo (int)$row['c_total']; ?>$</td>
                             <td>
                                 <form method="post">
