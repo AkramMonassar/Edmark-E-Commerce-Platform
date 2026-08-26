@@ -129,6 +129,7 @@ $label = ['pending' => 'بانتظار التحويل', 'paid' => 'مدفوع ب
 
   <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'stats' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=stats">📊 الإحصائيات</a></li>
+    <li class="nav-item"><a class="nav-link" href="reports.php">📈 التقارير</a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'orders' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=orders">🧾 الطلبات <?php if ($sPending > 0): ?><span class="badge text-bg-warning"><?php echo $sPending; ?></span><?php endif; ?></a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'products' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=products">📦 المنتجات</a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'users' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=users">👥 المستخدمون</a></li>
