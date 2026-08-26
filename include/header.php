@@ -27,6 +27,7 @@ if (isset($_SESSION['u_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link href="assets/custom.css" rel="stylesheet">
     <style>
         :root {
             --brand: #2e7d32;
@@ -211,7 +212,9 @@ if (isset($_SESSION['u_id'])) {
             }
         }
     </style>
-    <script>window.CSRF = '<?php echo csrf_token(); ?>';</script>
+    <script>
+        window.CSRF = '<?php echo csrf_token(); ?>';
+    </script>
 </head>
 
 <body class="bg-light">
@@ -233,22 +236,22 @@ if (isset($_SESSION['u_id'])) {
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="cart.php">
                             <i class="bi bi-cart3 fs-5"></i>
-                            <?php if ($cart_count > 0): ?>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning pulse"><?php echo $cart_count; ?></span>
-                            <?php endif; ?>
                             <span id="cartBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-warning pulse <?php echo $cart_count === 0 ? 'd-none' : ''; ?>"><?php echo $cart_count; ?></span>
+                            <span class="d-none d-lg-inline">السلة</span>
                         </a>
                     </li>
-                    <span id="cartTotal" class="badge text-bg-light text-brand <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
+                    <li class="nav-item">
+                        <span id="cartTotal" class="badge text-bg-light text-brand <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
+                    </li>
                     <?php if (isset($_SESSION['user'])): ?>
                         <li class="nav-item"><span class="nav-link text-warning">أهلاً، <?php echo htmlspecialchars($_SESSION['user'], ENT_QUOTES); ?></span></li>
+                        <?php if (isset($_SESSION['u_type']) && $_SESSION['u_type'] === 'admin'): ?>
+                            <li class="nav-item"><a class="nav-link text-warning" href="admin.php"><i class="bi bi-speedometer2"></i> لوحة التحكم</a></li>
+                        <?php endif; ?>
                         <li class="nav-item"><a class="nav-link" href="logout.php">تسجيل الخروج</a></li>
                     <?php else: ?>
                         <li class="nav-item"><a class="nav-link" href="login.php">تسجيل الدخول</a></li>
                         <li class="nav-item ms-lg-2"><a class="btn btn-outline-light btn-sm" href="create_acount.php">حساب جديد</a></li>
-                        <?php if (isset($_SESSION['u_type']) && $_SESSION['u_type'] === 'admin'): ?>
-                            <li class="nav-item"><a class="nav-link text-warning" href="admin.php"><i class="bi bi-speedometer2"></i> لوحة التحكم</a></li>
-                        <?php endif; ?>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -256,5 +259,3 @@ if (isset($_SESSION['u_id'])) {
     </nav>
 
     <main class="py-4">
-
-    
