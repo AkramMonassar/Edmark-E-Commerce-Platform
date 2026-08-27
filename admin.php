@@ -207,9 +207,10 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
             <th>الإجمالي</th>
             <th>الطريقة</th>
             <th>التفاصيل</th>
+            <th>العنوان</th>
             <th>الحالة</th>
             <th>التاريخ</th>
-            <th></th>
+            <th>إجراء</th>
           </tr>
         </thead>
         <tbody>
@@ -228,7 +229,7 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
               <td><span class="badge text-bg-<?php echo $badge[$o['status']] ?? 'secondary'; ?>"><?php echo $label[$o['status']] ?? htmlspecialchars($o['status'], ENT_QUOTES); ?></span></td>
               <td class="text-muted"><?php echo htmlspecialchars($o['created_at'], ENT_QUOTES); ?></td>
               <td class="text-nowrap">
-                <?php if (in_array($o['status'], ['pending', 'cod'])): ?>
+                <?php if (in_array($o['status'], ['pending', 'cod', 'paid'])): ?>
                   <form method="post" class="d-inline">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="action" value="confirm_order">
