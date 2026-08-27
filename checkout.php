@@ -61,6 +61,10 @@ function luhnOk($num)
   }
   return $s % 10 === 0;
 }
+// إعادة تعبئة الحقول بعد فشل الإرسال + تعليم الناقص بالأحمر
+$old = fn($k, $d = '') => htmlspecialchars($_POST[$k] ?? $d, ENT_QUOTES);
+$inv = fn($k) => (isset($_POST['submit']) && trim($_POST[$k] ?? '') === '') ? ' is-invalid' : '';
+
 
 $msg = '';
 $msgType = 'success';
@@ -287,25 +291,25 @@ if ($res) {
 
             <h6 class="mb-3"><i class="bi bi-geo-alt text-brand"></i> بيانات التوصيل</h6>
             <div class="form-floating mb-2">
-              <input type="text" name="c_name" class="form-control" id="cname" value="<?php echo htmlspecialchars($_SESSION['user'] ?? '', ENT_QUOTES); ?>" required>
+              <input type="text" name="c_name" class="form-control<?php echo $inv('c_name'); ?>" id="cname" value="<?php echo $old('c_name', $_SESSION['user'] ?? ''); ?>" required>
               <label for="cname">اسم المستلم</label>
             </div>
             <div class="row g-2 mb-2">
               <div class="col-6">
                 <div class="form-floating">
-                  <input type="tel" name="c_phone" class="form-control" id="cphone" placeholder="الهاتف" required>
+                  <input type="tel" name="c_phone" class="form-control<?php echo $inv('c_phone'); ?>" id="cphone" value="<?php echo $old('c_phone'); ?>" required>
                   <label for="cphone">رقم الهاتف</label>
                 </div>
               </div>
               <div class="col-6">
                 <div class="form-floating">
-                  <input type="text" name="c_city" class="form-control" id="ccity" placeholder="المدينة" required>
+                  <input type="text" name="c_city" class="form-control<?php echo $inv('c_city'); ?>" id="ccity" value="<?php echo $old('c_city'); ?>" required>
                   <label for="ccity">المدينة</label>
                 </div>
               </div>
             </div>
             <div class="form-floating mb-4">
-              <textarea name="c_address" class="form-control" id="caddress" style="height:70px" required></textarea>
+              <textarea name="c_address" class="form-control<?php echo $inv('c_address'); ?>" id="caddress" style="height:70px" required><?php echo $old('c_address'); ?></textarea>
               <label for="caddress">العنوان التفصيلي</label>
             </div>
             <hr>
@@ -347,11 +351,11 @@ if ($res) {
               </select>
               <div class="alert alert-light border small"><?php echo $storeInfo['wallet']; ?> — حوّل المبلغ ثم أدخل بيانات تحويلك:</div>
               <div class="form-floating mb-2">
-                <input type="text" name="walletNumber" class="form-control" id="walletNumber">
+                <input type="text" name="walletNumber" class="form-control" id="walletNumber" value="<?php echo $old('walletNumber'); ?>">
                 <label for="walletNumber">رقم محفظتك</label>
               </div>
               <div class="form-floating mb-2">
-                <input type="text" name="transferRef" class="form-control" id="transferRef">
+                <input type="text" name="transferRef" class="form-control" id="transferRef" value="<?php echo $old('transferRef'); ?>">
                 <label for="transferRef">رقم مرجع العملية</label>
               </div>
             </div>
@@ -365,11 +369,11 @@ if ($res) {
               </select>
               <div class="alert alert-light border small"><?php echo $storeInfo['exchange']; ?> — حوّل المبلغ ثم أدخل بيانات الحوالة:</div>
               <div class="form-floating mb-2">
-                <input type="text" name="senderName" class="form-control" id="senderName">
+                <input type="text" name="senderName" class="form-control" id="senderName" value="<?php echo $old('senderName'); ?>">
                 <label for="senderName">اسم المرسل</label>
               </div>
               <div class="form-floating mb-2">
-                <input type="text" name="transferRef2" class="form-control" id="transferRef2">
+                <input type="text" name="transferRef2" class="form-control" id="transferRef2" value="<?php echo $old('transferRef2'); ?>">
                 <label for="transferRef2">رقم مرجع الحوالة</label>
               </div>
             </div>
@@ -390,13 +394,13 @@ if ($res) {
                 <span class="brand-pill"><i class="bi bi-paypal"></i> PayPal</span>
               </div>
               <div class="form-floating mb-2">
-                <input type="text" name="cardNumber" id="cardNumber" class="form-control" inputmode="numeric" autocomplete="cc-number">
+                <input type="text" name="cardNumber" id="cardNumber" class="form-control" inputmode="numeric" autocomplete="cc-number" value="<?php echo $old('cardNumber'); ?>">
                 <label for="cardNumber">رقم البطاقة (يُكتشف نوعها تلقائيًا)</label>
               </div>
               <div class="row g-2 mb-2">
                 <div class="col-6">
                   <div class="form-floating">
-                    <input type="text" name="expire" id="expire" class="form-control" inputmode="numeric">
+                    <input type="text" name="expire" id="expire" class="form-control" inputmode="numeric" value="<?php echo $old('expire'); ?>">
                     <label for="expire">تاريخ الانتهاء (MM/YY)</label>
                   </div>
                 </div>
@@ -408,8 +412,7 @@ if ($res) {
                 </div>
               </div>
               <div class="form-floating mb-2">
-                <input type="text" name="fullName" id="fullName" class="form-control" autocomplete="cc-name">
-                <label for="fullName">الاسم على البطاقة</label>
+                <input type="text" name="fullName" id="fullName" class="form-control" autocomplete="cc-name" value="<?php echo $old('fullName'); ?>"> <label for="fullName">الاسم على البطاقة</label>
               </div>
               <p class="small text-muted mb-0"><i class="bi bi-shield-lock text-brand"></i> وضع تعليمي (محاكاة بوابة) — لا تُدخل بطاقة حقيقية.</p>
             </div>

@@ -134,3 +134,32 @@
 /* قفزة الرقم عند التغيير */
 .qty-val.pop { animation: pop .3s ease; }
 @keyframes pop { 50% { transform: scale(1.35); color: var(--brand); } }
+
+/* حقول البطاقة: اتجاه يسار→يمين عشان الرقم يظهر بنفس ترتيب إدخاله */
+#cardNumber, #expire, #cvc {
+    direction: ltr;
+    text-align: left;
+}
+
+/* حقل الكمية: شفاف، بدون حدود، بدون أسهم المتصفح */
+.qty-stepper input[type="number"],
+.qty-input {
+    width: 56px !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    text-align: center;
+    font-weight: 700;
+    font-size: .95rem;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.qty-stepper input[type="number"]::-webkit-outer-spin-button,
+.qty-stepper input[type="number"]::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.qty-stepper input:focus, .qty-input:focus { outline: none; }
+.qty-input.pop, .qty-stepper input.pop { animation: pop .3s ease; }
