@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/../connection/connection.php';
 
+
 $cart_count = 0;
 $cart_total = 0;
 if (isset($_SESSION['u_id'])) {
@@ -249,6 +250,7 @@ if (isset($_SESSION['u_id'])) {
                         <span id="cartTotal" class="badge bg-white text-brand border <?php echo $cart_total === 0 ? 'd-none' : ''; ?>"><?php echo $cart_total; ?>$</span>
                     </li>
                     <?php if (isset($_SESSION['user'])): ?>
+                        <li class="nav-item"><a class="nav-link" href="my_orders.php"><i class="bi bi-box-seam"></i> طلباتي</a></li>
                         <li class="nav-item"><span class="nav-link fw-bold">أهلاً، <?php echo htmlspecialchars($_SESSION['user'], ENT_QUOTES); ?></span></li> <?php if (isset($_SESSION['u_type']) && $_SESSION['u_type'] === 'admin'): ?>
                             <li class="nav-item"><a class="nav-link text-danger" href="admin.php"><i class="bi bi-speedometer2"></i> لوحة التحكم</a></li>
                         <?php endif; ?>

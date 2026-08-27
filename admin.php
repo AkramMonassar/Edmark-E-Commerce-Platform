@@ -29,12 +29,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($action === 'confirm_order') {
     $oid = (int) $_POST['order_id'];
     mysqli_query($con_db, "UPDATE orders SET status='confirmed' WHERE order_id=$oid");
-    $flash = "تم تأكيد الطلب #$oid ✅";
+    // إشعار تأكيد للعميل
+    try {
+      require_once __DIR__ . '/include/mailer.php';
+      $o = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT o.*, u.u_email, u.u_name FROM orders o LEFT JOIN users u ON u.u_id = o.u_id WHERE o.order_id = $oid"));
+      if ($o && !empty($o['u_email'])) {
+        $cname = htmlspecialchars($o['customer_name'] ?: $o['u_name'], ENT_QUOTES);
+        $body = "<div dir='rtl' style='font-family:Tahoma,sans-serif;max-width:600px;margin:auto;background:#f8f9fa;padding:20px;border-radius:12px'>
+                    <h2 style='color:#2e7d32'>✅ طلبك #$oid تم تأكيده</h2>
+                    <p>عزيزنا <b>$cname</b>،</p>
+                    <p>تم تأكيد طلبك وهو الآن <b>قيد التجهيز</b>. الإجمالي: <b>" . (int)$o['total'] . "$</b>.</p>
+                    <p>سنتواصل معك على <b>" . htmlspecialchars($o['customer_phone'] ?? '', ENT_QUOTES) . "</b> لتنسيق التوصيل إلى: " . htmlspecialchars(($o['city'] ?? '') . ' - ' . ($o['address'] ?? ''), ENT_QUOTES) . "</p>
+                    <p style='color:#888;font-size:12px;text-align:center'>رسالة آلية من متجر إدمارك</p>
+                </div>";
+        send_mail($o['u_email'], $o['customer_name'] ?: $o['u_name'], "✅ تم تأكيد طلبك #$oid — متجر إدمارك", $body);
+        $flash = "تم تأكيد الطلب #$oid وإرسال إشعار للعميل 📧";
+      } else {
+        $flash = "تم تأكيد الطلب #$oid";
+      }
+    } catch (\Throwable $e) {
+      error_log('Confirm email failed: ' . $e->getMessage());
+      $flash = "تم تأكيد الطلب #$oid (تعذر إرسال الإشعار)";
+    }
     $tab = 'orders';
   } elseif ($action === 'cancel_order') {
     $oid = (int) $_POST['order_id'];
-    mysqli_query($con_db, "UPDATE orders SET status='cancelled' WHERE order_id=$oid");
-    $flash = "تم إلغاء الطلب #$oid";
+    $o = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT status FROM orders WHERE order_id = $oid"));
+    if ($o && $o['status'] !== 'cancelled') {
+      $its = mysqli_query($con_db, "SELECT product_id, qty FROM order_items WHERE order_id = $oid");
+      while ($it = mysqli_fetch_assoc($its)) {
+        $pid2 = (int)$it['product_id'];
+        $q2 = (int)$it['qty'];
+        mysqli_query($con_db, "UPDATE product SET p_quantity = p_quantity + $q2 WHERE p_id = $pid2");
+      }
+      mysqli_query($con_db, "UPDATE orders SET status='cancelled' WHERE order_id = $oid");
+      $flash = "تم إلغاء الطلب #$oid وإرجاع الكميات للمخزون ♻️";
+    }
     $tab = 'orders';
   } elseif ($action === 'add_product') {
     $name  = trim($_POST['p_name'] ?? '');
@@ -119,7 +149,7 @@ $products = mysqli_query($con_db, "SELECT * FROM product ORDER BY p_id");
 $users   = mysqli_query($con_db, "SELECT * FROM users ORDER BY u_id");
 
 $badge = ['pending' => 'warning', 'paid' => 'success', 'confirmed' => 'info', 'cod' => 'secondary', 'cancelled' => 'danger'];
-$label = ['pending' => 'بانتظار التحويل', 'paid' => 'مدفوع بطاقة', 'confirmed' => 'مؤكد', 'cod' => 'عند الاستلام', 'cancelled' => 'ملغي'];
+$label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع بطاقة', 'confirmed' => 'مؤكد', 'cod' => 'عند الاستلام', 'cancelled' => 'ملغي'];
 ?>
 
 <div class="container my-4">
@@ -190,6 +220,11 @@ $label = ['pending' => 'بانتظار التحويل', 'paid' => 'مدفوع ب
               <td class="fw-bold text-brand"><?php echo (int)$o['total']; ?>$</td>
               <td><?php echo htmlspecialchars($o['payment_method'], ENT_QUOTES); ?></td>
               <td style="max-width:220px" class="text-muted"><?php echo htmlspecialchars($o['method_details'] ?? '', ENT_QUOTES); ?></td>
+              <td style="max-width:200px" class="small">
+                <b><?php echo htmlspecialchars($o['customer_name'] ?? '', ENT_QUOTES); ?></b><br>
+                📞 <a href="tel:<?php echo htmlspecialchars($o['customer_phone'] ?? '', ENT_QUOTES); ?>"><?php echo htmlspecialchars($o['customer_phone'] ?? '—', ENT_QUOTES); ?></a><br>
+                <span class="text-muted">📍 <?php echo htmlspecialchars(($o['city'] ?? '') . ' - ' . ($o['address'] ?? ''), ENT_QUOTES); ?></span>
+              </td>
               <td><span class="badge text-bg-<?php echo $badge[$o['status']] ?? 'secondary'; ?>"><?php echo $label[$o['status']] ?? htmlspecialchars($o['status'], ENT_QUOTES); ?></span></td>
               <td class="text-muted"><?php echo htmlspecialchars($o['created_at'], ENT_QUOTES); ?></td>
               <td class="text-nowrap">
@@ -244,6 +279,7 @@ $label = ['pending' => 'بانتظار التحويل', 'paid' => 'مدفوع ب
             <th>السعر</th>
             <th>الكمية</th>
             <th>الوصف</th>
+            <th>المخزون</th>
             <th></th>
           </tr>
         </thead>
@@ -258,6 +294,8 @@ $label = ['pending' => 'بانتظار التحويل', 'paid' => 'مدفوع ب
                 <td><input type="text" name="p_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
                 <td style="width:90px"><input type="number" name="p_price" class="form-control form-control-sm" value="<?php echo (int)$p['p_price']; ?>"></td>
                 <td style="width:90px"><input type="number" name="p_quantity" class="form-control form-control-sm" value="<?php echo (int)$p['p_quantity']; ?>"></td>
+                <td><?php $qq = (int)$p['p_quantity'];
+                    echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
                 <td><input type="text" name="p_describe" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
                 <td class="text-nowrap">
                   <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-save"></i> حفظ</button>

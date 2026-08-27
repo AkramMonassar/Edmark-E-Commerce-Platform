@@ -108,7 +108,8 @@
         toast('تمت الإضافة إلى السلة ✅');
       } else if (r.error === 'login_required') location.href = 'login.php';
       else if (r.error === 'already_in_cart') toast('المنتج موجود في سلتك بالفعل', 'warning');
-      else toast('حدث خطأ غير متوقع', 'danger');
+      else if (r.error === 'out_of_stock') toast('هذا المنتج نفد من المخزون', 'warning');
+      else toast(r.error === 'out_of_stock' ? 'الكمية المطلوبة تتجاوز المخزون المتاح' : 'تعذر تحديث الكمية', 'warning');
     });
   });
 
@@ -132,49 +133,61 @@
     });
   });
 
-  /* ===== 5) العدّاد الحديث (+ / −) ===== */
-  document.querySelectorAll('.qty-stepper').forEach(st => {
-    const id = st.dataset.id;
-    const val = st.querySelector('.qty-val');
-    const plus = st.querySelector('.plus');
+</script>
+<script>
+// ===== العدّاد v2: أزرار + كتابة مباشرة + الحد = المخزون =====
+document.querySelectorAll('.qty-stepper').forEach(st => {
+    const id    = st.dataset.id;
+    const stock = Math.max(1, parseInt(st.dataset.stock, 10) || 1);
+    const inp   = st.querySelector('.qty-input');
+    const plus  = st.querySelector('.plus');
     const minus = st.querySelector('.minus');
 
+    const clamp = v => Math.min(stock, Math.max(1, v));
+
     const paint = q => {
-      val.textContent = q;
-      val.classList.remove('pop');
-      void val.offsetWidth;
-      val.classList.add('pop');
-      minus.disabled = q <= 1;
-      plus.disabled = q >= 10;
+        inp.value = q;
+        inp.classList.remove('pop'); void inp.offsetWidth; inp.classList.add('pop');
+        minus.disabled = q <= 1;
+        plus.disabled  = q >= stock;
     };
 
     const send = q => {
-      paint(q);
-      api('qty', {
-        id,
-        qty: q
-      }).then(r => {
-        if (r.ok) {
-          const tr = st.closest('tr');
-          const price = parseInt(tr.querySelector('.cell-price').textContent, 10) || 0;
-          const cell = tr.querySelector('.cell-total');
-          cell.textContent = (price * q) + '$';
-          cell.classList.remove('flash');
-          void cell.offsetWidth;
-          cell.classList.add('flash');
-          updateCartUI(r);
-        } else {
-          toast('تعذر تحديث الكمية', 'danger');
-        }
-      });
+        paint(q);
+        api('qty', { id, qty: q }).then(r => {
+            if (r.ok) {
+                const tr    = st.closest('tr');
+                const price = parseInt(tr.querySelector('.cell-price').textContent, 10) || 0;
+                const cell  = tr.querySelector('.cell-total');
+                cell.textContent = (price * q) + '$';
+                cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
+                updateCartUI(r);
+            } else if (r.error === 'out_of_stock') {
+                toast('الحد الأقصى المتاح من المخزون: ' + stock, 'warning');
+            } else {
+                toast('تعذر تحديث الكمية', 'danger');
+            }
+        });
     };
 
-    minus.disabled = (+val.textContent) <= 1;
-    plus.disabled = (+val.textContent) >= 10;
+    minus.disabled = (+inp.value) <= 1;
+    plus.disabled  = (+inp.value) >= stock;
 
-    plus.addEventListener('click', () => send(Math.min(10, +val.textContent + 1)));
-    minus.addEventListener('click', () => send(Math.max(1, +val.textContent - 1)));
-  });
+    plus.addEventListener('click',  () => send(clamp((+inp.value || 1) + 1)));
+    minus.addEventListener('click', () => send(clamp((+inp.value || 1) - 1)));
+
+    // كتابة بالكيبورد مع debounce
+    let t = null;
+    inp.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            let v = parseInt(inp.value, 10);
+            if (!v || v < 1) v = 1;
+            if (v > stock) { toast('المتوفر بالمخزون: ' + stock + ' فقط', 'warning'); v = stock; }
+            send(v);
+        }, 400);
+    });
+});
 </script>
 </body>
 

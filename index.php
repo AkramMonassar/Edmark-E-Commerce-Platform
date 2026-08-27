@@ -1,31 +1,45 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
 
 if (isset($_POST['addtocart'])) {
-    csrf_check();
-    if (!isset($_SESSION['u_id'])) { header("Location: login.php"); exit; }
-    $uid = (int) $_SESSION['u_id'];
-    $id  = (int) $_POST['id'];
-    $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
-    if ($res && ($row = mysqli_fetch_assoc($res))) {
-        $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
-        if ($check && mysqli_num_rows($check) == 0) {
-            $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
-            $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
-            $price    = (int) $row['p_price'];
-            mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
-        }
-    }
-    header("Location: index.php?added=1");
+  csrf_check();
+  if (!isset($_SESSION['u_id'])) {
+    header("Location: login.php");
     exit;
+  }
+  $uid = (int) $_SESSION['u_id'];
+  $id  = (int) $_POST['id'];
+  $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
+  if ($res && ($row = mysqli_fetch_assoc($res))) {
+    $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
+    if ($check && mysqli_num_rows($check) == 0) {
+      $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
+      $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
+      $price    = (int) $row['p_price'];
+      mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
+    }
+  }
+  if ((int)$row['p_quantity'] <= 0) {
+    header("Location: index.php?out=1");
+    exit;
+  }
+  header("Location: index.php?added=1");
+  exit;
 }
 include("include/header.php");
 ?>
 
 <?php if (isset($_GET['added'])): ?>
-<div class="container"><div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> تمت إضافة المنتج إلى السلة</div></div>
+  <div class="container">
+    <div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> تمت إضافة المنتج إلى السلة</div>
+  </div>
+<?php endif; ?>
+<?php if (isset($_GET['out'])): ?>
+<div class="container"><div class="alert alert-warning py-2">هذا المنتج غير متوفر بالمخزون حاليًا</div></div>
 <?php endif; ?>
 
 <div id="heroCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-aos="zoom-in">
@@ -56,35 +70,39 @@ include("include/header.php");
     $result = mysqli_query($con_db, "SELECT * FROM product");
     $i = 0;
     if ($result && mysqli_num_rows($result) > 0) {
-        while ($p = mysqli_fetch_assoc($result)) {
-            $pid   = (int) $p['p_id'];
-            $delay = ($i % 4) * 100;   // حركة متدرجة: كل بطاقة تلي الثانية
-            $i++;
+      while ($p = mysqli_fetch_assoc($result)) {
+        $pid   = (int) $p['p_id'];
+        $stock = (int) $p['p_quantity'];
+        $delay = ($i % 4) * 100;   // حركة متدرجة: كل بطاقة تلي الثانية
+        $i++;
     ?>
-    <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
-      <div class="card h-100 shadow-sm">
-        <a href="details.php?id=<?php echo $pid; ?>">
-          <div class="img-wrap">
-            <img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" class="w-100" alt="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>">
+        <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+          <div class="card h-100 shadow-sm">
+            <a href="details.php?id=<?php echo $pid; ?>">
+              <div class="img-wrap">
+                <img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" class="w-100" alt="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>">
+              </div>
+            </a>
+            <div class="card-body text-center d-flex flex-column">
+              <?php if ($stock > 0 && $stock <= 5): ?>
+                <small class="text-warning mb-2">⚠ باقي <?php echo $stock; ?> فقط</small>
+              <?php endif; ?>
+              <?php if ($stock <= 0): ?>
+                <button class="btn btn-secondary btn-sm w-100 mt-auto" disabled><i class="bi bi-x-circle"></i> نفد المخزون</button>
+              <?php elseif (isset($_SESSION['u_id'])): ?>
+                <form method="post" action="index.php" class="js-add-form mt-auto">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="id" value="<?php echo $pid; ?>">
+                  <button type="submit" name="addtocart" class="btn btn-brand btn-sm w-100"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
+                </form>
+              <?php else: ?>
+                <a href="login.php" class="btn btn-outline-secondary btn-sm w-100 mt-auto">سجل الدخول للشراء</a>
+              <?php endif; ?>
+            </div>
           </div>
-        </a>
-        <div class="card-body text-center d-flex flex-column">
-          <h6 class="card-title"><?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?></h6>
-          <p class="fw-bold text-brand mb-2"><?php echo (int) $p['p_price']; ?>$</p>
-          <?php if (isset($_SESSION['u_id'])): ?>
-          <form method="post" action="index.php" class="js-add-form mt-auto">
-            <?php echo csrf_field(); ?>
-            <input type="hidden" name="id" value="<?php echo $pid; ?>">
-            <button type="submit" name="addtocart" class="btn btn-brand btn-sm w-100"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
-          </form>
-          <?php else: ?>
-          <a href="login.php" class="btn btn-outline-secondary btn-sm w-100 mt-auto">سجل الدخول للشراء</a>
-          <?php endif; ?>
         </div>
-      </div>
-    </div>
     <?php
-        }
+      }
     }
     ?>
   </div>

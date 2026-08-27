@@ -37,7 +37,7 @@ if (isset($_POST['deleteAll'])) {
 
 include("include/header.php");
 
-$result2 = mysqli_query($con_db, "SELECT * FROM cart WHERE u_id = $uid");
+$result2 = mysqli_query($con_db, "SELECT c.*, p.p_quantity AS stock FROM cart c LEFT JOIN product p ON p.p_id = c.id WHERE c.u_id = $uid");
 $count = $result2 ? mysqli_num_rows($result2) : 0;
 ?>
 <div class="container">
@@ -68,12 +68,13 @@ $count = $result2 ? mysqli_num_rows($result2) : 0;
                             <td><img src="<?php echo htmlspecialchars($row['c_img'], ENT_QUOTES); ?>" style="width:60px;height:60px;object-fit:contain"></td>
                             <td><?php echo htmlspecialchars($row['c_name'], ENT_QUOTES); ?></td>
                             <td class="cell-price"><?php echo (int)$row['c_price']; ?>$</td>
-                            <td class="text-center">
-                                <div class="qty-stepper" data-id="<?php echo (int)$row['id']; ?>">
-                                    <button type="button" class="qty-btn minus" aria-label="إنقاص الكمية">−</button>
-                                    <span class="qty-val"><?php echo (int)$row['c_qty']; ?></span>
-                                    <button type="button" class="qty-btn plus" aria-label="زيادة الكمية">+</button>
+                            <td class="text-center ">
+                                <div class="qty-stepper" data-id="<?php echo (int)$row['id']; ?>" data-stock="<?php echo (int)($row['stock'] ?? 1); ?>">
+                                    <button type="button" class="qty-btn minus" aria-label="إنقاص">−</button>
+                                    <input type="number" class="qty-input" value="<?php echo (int)$row['c_qty']; ?>" min="1" max="<?php echo (int)($row['stock'] ?? 1); ?>" inputmode="numeric">
+                                    <button type="button" class="qty-btn plus" aria-label="زيادة">+</button>
                                 </div>
+                                <small class="text-muted">المتوفر: <?php echo (int)($row['stock'] ?? 0); ?></small>
                             </td>
                             <td class="cell-total fw-bold text-brand"><?php echo (int)$row['c_total']; ?>$</td>
                             <td class="fw-bold text-brand"><?php echo (int)$row['c_total']; ?>$</td>

@@ -23,6 +23,10 @@ if (isset($_POST['addtocart'])) {
             mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $pid, '$name_esc', $price, $price, '$img_esc')");
         }
     }
+    if ((int)$row['p_quantity'] <= 0) {
+        header("Location: index.php?out=1");
+        exit;
+    }
     header("Location: index.php?added=1");
     exit;
 }
@@ -32,6 +36,7 @@ include("include/header.php");
 $result = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
 if ($result && mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_assoc($result);
+    $stock = (int)$row['p_quantity'];
 ?>
     <div class="container my-4">
         <div class="row g-4 align-items-center">
@@ -44,8 +49,10 @@ if ($result && mysqli_num_rows($result) > 0) {
                 <h3 class="fw-bold"><?php echo htmlspecialchars($row['p_name'], ENT_QUOTES); ?></h3>
                 <p class="text-muted mt-3"><?php echo htmlspecialchars($row['p_describe'], ENT_QUOTES); ?></p>
                 <h4 class="text-brand fw-bold mt-3"><?php echo (int)$row['p_price']; ?>$</h4>
-                <?php if (isset($_SESSION['u_id'])): ?>
-                    <form method="post" class="mt-3 js-add-form">
+                <?php if ($stock <= 0): ?>
+                    <span class="badge text-bg-danger fs-6 mt-3">نفد المخزون حاليًا</span>
+                <?php elseif (isset($_SESSION['u_id'])): ?>
+                    <form method="post" class="js-add-form mt-3">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="id" value="<?php echo $id; ?>">
                         <button type="submit" name="addtocart" class="btn btn-brand btn-lg"><i class="bi bi-cart-plus"></i> أضف للسلة</button>

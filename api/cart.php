@@ -40,6 +40,7 @@ if ($action === 'add') {
     $id = (int)($_POST['id'] ?? 0);
     $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
     if (!$res || !($p = mysqli_fetch_assoc($res))) respond(false, ['error' => 'product_not_found']);
+    if ((int)$p['p_quantity'] <= 0) respond(false, ['error' => 'out_of_stock']);   // ← جديد
     $chk = mysqli_query($con_db, "SELECT id FROM cart WHERE id = $id AND u_id = $uid");
     if ($chk && mysqli_num_rows($chk) > 0) respond(false, ['error' => 'already_in_cart']);
     $ne = mysqli_real_escape_string($con_db, $p['p_name']);
@@ -60,9 +61,12 @@ if ($action === 'delete') {
 if ($action === 'qty') {
     $id = (int)($_POST['id'] ?? 0);
     $q  = (int)($_POST['qty'] ?? 0);
-    if ($q < 1 || $q > 10) respond(false, ['error' => 'qty_range']);
-    $r3 = mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id AND u_id = $uid");
-    if (!$r3 || !($row = mysqli_fetch_assoc($r3))) respond(false, ['error' => 'not_found']);
+    if ($q < 1) respond(false, ['error' => 'qty_range']);
+    $row = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT c_price FROM cart WHERE id = $id AND u_id = $uid"));
+    if (!$row) respond(false, ['error' => 'not_found']);
+    $st = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT p_quantity FROM product WHERE p_id = $id"));
+    $stock = $st ? (int)$st['p_quantity'] : 0;
+    if ($q > $stock) respond(false, ['error' => 'out_of_stock', 'stock' => $stock]);
     $t = ((int)$row['c_price']) * $q;
     mysqli_query($con_db, "UPDATE cart SET c_total = $t, c_qty = $q WHERE id = $id AND u_id = $uid");
     respond(true, cartStatus($con_db, $uid));
