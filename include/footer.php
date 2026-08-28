@@ -30,9 +30,12 @@
 </footer>
 
 <button id="toTop" title="العودة للأعلى"><i class="bi bi-arrow-up"></i></button>
-
+<a href="https://wa.me/967775180222?text=<?php echo urlencode('مرحبًا متجر إدمارك 🌿 أبغى أستفسر'); ?>" target="_blank" id="waBtn" title="تواصل واتساب">
+  <i class="bi bi-whatsapp"></i>
+</a>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
 <script>
   /* ===== 1) الحركة والتمرير ===== */
   if (window.AOS) {
@@ -132,62 +135,71 @@
       }
     });
   });
-
 </script>
 <script>
-// ===== العدّاد v2: أزرار + كتابة مباشرة + الحد = المخزون =====
-document.querySelectorAll('.qty-stepper').forEach(st => {
-    const id    = st.dataset.id;
+  // ===== العدّاد v2: أزرار + كتابة مباشرة + الحد = المخزون =====
+  document.querySelectorAll('.qty-stepper').forEach(st => {
+    const id = st.dataset.id;
     const stock = Math.max(1, parseInt(st.dataset.stock, 10) || 1);
-    const inp   = st.querySelector('.qty-input');
-    const plus  = st.querySelector('.plus');
+    const inp = st.querySelector('.qty-input');
+    const plus = st.querySelector('.plus');
     const minus = st.querySelector('.minus');
 
     const clamp = v => Math.min(stock, Math.max(1, v));
 
     const paint = q => {
-        inp.value = q;
-        inp.classList.remove('pop'); void inp.offsetWidth; inp.classList.add('pop');
-        minus.disabled = q <= 1;
-        plus.disabled  = q >= stock;
+      inp.value = q;
+      inp.classList.remove('pop');
+      void inp.offsetWidth;
+      inp.classList.add('pop');
+      minus.disabled = q <= 1;
+      plus.disabled = q >= stock;
     };
 
     const send = q => {
-        paint(q);
-        api('qty', { id, qty: q }).then(r => {
-            if (r.ok) {
-                const tr    = st.closest('tr');
-                const price = parseInt(tr.querySelector('.cell-price').textContent, 10) || 0;
-                const cell  = tr.querySelector('.cell-total');
-                cell.textContent = (price * q) + '$';
-                cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
-                updateCartUI(r);
-            } else if (r.error === 'out_of_stock') {
-                toast('الحد الأقصى المتاح من المخزون: ' + stock, 'warning');
-            } else {
-                toast('تعذر تحديث الكمية', 'danger');
-            }
-        });
+      paint(q);
+      api('qty', {
+        id,
+        qty: q
+      }).then(r => {
+        if (r.ok) {
+          const tr = st.closest('tr');
+          const price = parseInt(tr.querySelector('.cell-price').textContent, 10) || 0;
+          const cell = tr.querySelector('.cell-total');
+          cell.textContent = (price * q) + '$';
+          cell.classList.remove('flash');
+          void cell.offsetWidth;
+          cell.classList.add('flash');
+          updateCartUI(r);
+        } else if (r.error === 'out_of_stock') {
+          toast('الحد الأقصى المتاح من المخزون: ' + stock, 'warning');
+        } else {
+          toast('تعذر تحديث الكمية', 'danger');
+        }
+      });
     };
 
     minus.disabled = (+inp.value) <= 1;
-    plus.disabled  = (+inp.value) >= stock;
+    plus.disabled = (+inp.value) >= stock;
 
-    plus.addEventListener('click',  () => send(clamp((+inp.value || 1) + 1)));
+    plus.addEventListener('click', () => send(clamp((+inp.value || 1) + 1)));
     minus.addEventListener('click', () => send(clamp((+inp.value || 1) - 1)));
 
     // كتابة بالكيبورد مع debounce
     let t = null;
     inp.addEventListener('input', () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-            let v = parseInt(inp.value, 10);
-            if (!v || v < 1) v = 1;
-            if (v > stock) { toast('المتوفر بالمخزون: ' + stock + ' فقط', 'warning'); v = stock; }
-            send(v);
-        }, 400);
+      clearTimeout(t);
+      t = setTimeout(() => {
+        let v = parseInt(inp.value, 10);
+        if (!v || v < 1) v = 1;
+        if (v > stock) {
+          toast('المتوفر بالمخزون: ' + stock + ' فقط', 'warning');
+          v = stock;
+        }
+        send(v);
+      }, 400);
     });
-});
+  });
 </script>
 </body>
 

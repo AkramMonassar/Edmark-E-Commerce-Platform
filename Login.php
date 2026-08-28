@@ -49,14 +49,22 @@ include("include/header.php");
         <div class="col-md-5 col-lg-4" data-aos="zoom-in">
             <div class="card shadow border-0 mt-4 mb-5">
                 <div class="card-body p-4 text-center">
+
                     <div class="mb-3"><i class="bi bi-person-circle text-brand" style="font-size:3.5rem"></i></div>
                     <h4 class="mb-3">تسجيل الدخول</h4>
+
                     <?php if (isset($_GET['added'])): ?>
                         <div class="alert alert-success py-2 small">تم إنشاء الحساب بنجاح، سجل دخولك الآن</div>
                     <?php endif; ?>
+
+                    <?php if (isset($_GET['reset'])): ?>
+                        <div class="alert alert-success py-2 small">تم تغيير كلمة المرور، سجل دخولك الآن</div>
+                    <?php endif; ?>
+
                     <?php if ($error !== ''): ?>
                         <div class="alert alert-danger py-2 small"><?php echo htmlspecialchars($error, ENT_QUOTES); ?></div>
                     <?php endif; ?>
+
                     <form method="post">
                         <?php echo csrf_field(); ?>
                         <div class="form-floating mb-3">
@@ -69,7 +77,9 @@ include("include/header.php");
                         </div>
                         <button type="submit" name="login" class="btn btn-brand w-100">دخول <i class="bi bi-box-arrow-in-left"></i></button>
                     </form>
+                    <p class="small mt-2 mb-0"><a href="reset.php" class="text-muted">نسيت كلمة المرور؟</a></p>
                     <p class="small mt-3 mb-0">ما عندك حساب؟ <a href="create_acount.php" class="text-brand fw-bold">أنشئ حسابًا</a></p>
+
                 </div>
             </div>
         </div>

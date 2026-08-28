@@ -67,10 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $tab = 'orders';
   } elseif ($action === 'add_product') {
-    $name  = trim($_POST['p_name'] ?? '');
-    $price = (int) ($_POST['p_price'] ?? 0);
-    $qty   = (int) ($_POST['p_quantity'] ?? 0);
-    $desc  = trim($_POST['p_describe'] ?? '');
+    $name   = trim($_POST['p_name'] ?? '');
+    $price  = (int) ($_POST['p_price'] ?? 0);
+    $qty    = (int) ($_POST['p_quantity'] ?? 0);
+    $desc   = trim($_POST['p_describe'] ?? '');
+    $catId  = (int) ($_POST['category_id'] ?? 0);   // ← جديد
+    $catSql = $catId > 0 ? $catId : 'NULL';         // ← جديد
     if ($name === '' || $price <= 0) {
       $flash = 'أدخل اسم المنتج وسعرًا صحيحًا';
       $tab = 'products';
@@ -91,17 +93,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
       $ne = mysqli_real_escape_string($con_db, $name);
       $de = mysqli_real_escape_string($con_db, $desc);
-      mysqli_query($con_db, "INSERT INTO product (p_name, p_quantity, p_price, p_describe, p_img) VALUES ('$ne', $qty, $price, '$de', '$img')");
+      mysqli_query($con_db, "INSERT INTO product (p_name, p_quantity, p_price, p_describe, p_img, category_id) VALUES ('$ne', $qty, $price, '$de', '$img', $catSql)");   // ← استُبدل (أضيف category_id)
       $flash .= "تمت إضافة المنتج ✅";
       $tab = 'products';
     }
   } elseif ($action === 'edit_product') {
-    $pid   = (int) ($_POST['p_id'] ?? 0);
-    $name  = mysqli_real_escape_string($con_db, trim($_POST['p_name'] ?? ''));
-    $price = (int) ($_POST['p_price'] ?? 0);
-    $qty   = (int) ($_POST['p_quantity'] ?? 0);
-    $desc  = mysqli_real_escape_string($con_db, trim($_POST['p_describe'] ?? ''));
-    mysqli_query($con_db, "UPDATE product SET p_name='$name', p_price=$price, p_quantity=$qty, p_describe='$desc' WHERE p_id=$pid");
+    $pid    = (int) ($_POST['p_id'] ?? 0);
+    $name   = mysqli_real_escape_string($con_db, trim($_POST['p_name'] ?? ''));
+    $price  = (int) ($_POST['p_price'] ?? 0);
+    $qty    = (int) ($_POST['p_quantity'] ?? 0);
+    $desc   = mysqli_real_escape_string($con_db, trim($_POST['p_describe'] ?? ''));
+    $catId  = (int) ($_POST['category_id'] ?? 0);   // ← جديد
+    $catSql = $catId > 0 ? $catId : 'NULL';         // ← جديد
+    mysqli_query($con_db, "UPDATE product SET p_name='$name', p_price=$price, p_quantity=$qty, p_describe='$desc', category_id=$catSql WHERE p_id=$pid");   // ← استُبدل (أضيف category_id)
     $flash = "تم تحديث المنتج #$pid ✅";
     $tab = 'products';
   } elseif ($action === 'delete_user') {
@@ -143,6 +147,9 @@ $sProducts = $cnt("SELECT COUNT(*) FROM product");
 $sOrders   = $cnt("SELECT COUNT(*) FROM orders");
 $sPending  = $cnt("SELECT COUNT(*) FROM orders WHERE status='pending' OR status='cod'");
 $sRevenue  = $cnt("SELECT COALESCE(SUM(total),0) FROM orders WHERE status IN ('paid','confirmed')");
+$catsAll = [];
+$rcq = mysqli_query($con_db, "SELECT * FROM categories ORDER BY cat_id");
+if ($rcq) while ($c = mysqli_fetch_assoc($rcq)) $catsAll[] = $c;
 
 $orders  = mysqli_query($con_db, "SELECT o.*, u.u_name FROM orders o LEFT JOIN users u ON u.u_id = o.u_id ORDER BY o.order_id DESC");
 $products = mysqli_query($con_db, "SELECT * FROM product ORDER BY p_id");
@@ -150,6 +157,8 @@ $users   = mysqli_query($con_db, "SELECT * FROM users ORDER BY u_id");
 
 $badge = ['pending' => 'warning', 'paid' => 'success', 'confirmed' => 'info', 'cod' => 'secondary', 'cancelled' => 'danger'];
 $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع بطاقة', 'confirmed' => 'مؤكد', 'cod' => 'عند الاستلام', 'cancelled' => 'ملغي'];
+
+
 ?>
 
 <div class="container my-4">
@@ -258,61 +267,66 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
     <div class="card border-0 shadow-sm mb-4" data-aos="fade-up">
       <div class="card-body">
         <h6 class="mb-3"><i class="bi bi-plus-circle text-brand"></i> إضافة منتج جديد</h6>
-        <form method="post" enctype="multipart/form-data" class="row g-2">
-          <?php echo csrf_field(); ?>
-          <input type="hidden" name="action" value="add_product">
-          <div class="col-md-3"><input type="text" name="p_name" class="form-control" placeholder="اسم المنتج" required></div>
-          <div class="col-md-2"><input type="number" name="p_price" class="form-control" placeholder="السعر $" min="1" required></div>
-          <div class="col-md-2"><input type="number" name="p_quantity" class="form-control" placeholder="الكمية" min="0"></div>
-          <div class="col-md-3"><input type="file" name="image" class="form-control" accept=".png,.jpg,.jpeg,.webp"></div>
-          <div class="col-12"><textarea name="p_describe" class="form-control" rows="2" placeholder="وصف المنتج"></textarea></div>
-          <div class="col-12"><button class="btn btn-brand"><i class="bi bi-plus-lg"></i> إضافة</button></div>
-        </form>
+      <form method="post" enctype="multipart/form-data" class="row g-2">
+        <?php echo csrf_field(); ?>
+        <input type="hidden" name="action" value="add_product">
+        <div class="col-md-3"><input type="text" name="p_name" class="form-control" placeholder="اسم المنتج" required></div>
+        <div class="col-md-2"><input type="number" name="p_price" class="form-control" placeholder="السعر $" min="1" required></div>
+        <div class="col-md-2"><input type="number" name="p_quantity" class="form-control" placeholder="الكمية" min="0"></div>
+        <div class="col-md-2">
+          <select name="category_id" class="form-select">
+            <option value="">بدون تصنيف</option>
+            <?php foreach ($catsAll as $c): ?>
+            <option value="<?php echo (int)$c['cat_id']; ?>"><?php echo htmlspecialchars($c['cat_name'], ENT_QUOTES); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-3"><input type="file" name="image" class="form-control" accept=".png,.jpg,.jpeg,.webp"></div>
+        <div class="col-12"><textarea name="p_describe" class="form-control" rows="2" placeholder="وصف المنتج"></textarea></div>
+        <div class="col-12"><button class="btn btn-brand"><i class="bi bi-plus-lg"></i> إضافة</button></div>
+      </form>
       </div>
     </div>
 
-    <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
-      <table class="table align-middle small">
-        <thead class="table-light">
-          <tr>
-            <th>صورة</th>
-            <th>الاسم</th>
-            <th>السعر</th>
-            <th>الكمية</th>
-            <th>الوصف</th>
-            <th>المخزون</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php while ($p = mysqli_fetch_assoc($products)): ?>
-            <tr>
-              <td><img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" style="width:45px;height:45px;object-fit:contain"></td>
-              <form method="post">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="edit_product">
-                <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
-                <td><input type="text" name="p_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
-                <td style="width:90px"><input type="number" name="p_price" class="form-control form-control-sm" value="<?php echo (int)$p['p_price']; ?>"></td>
-                <td style="width:90px"><input type="number" name="p_quantity" class="form-control form-control-sm" value="<?php echo (int)$p['p_quantity']; ?>"></td>
-                <td><?php $qq = (int)$p['p_quantity'];
-                    echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
-                <td><input type="text" name="p_describe" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
-                <td class="text-nowrap">
-                  <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-save"></i> حفظ</button>
-              </form>
-              <form method="post" class="d-inline" onsubmit="return confirm('حذف المنتج نهائيًا؟')">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="delete_product">
-                <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
-                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-              </form>
-              </td>
-            </tr>
-          <?php endwhile; ?>
-        </tbody>
-      </table>
-    </div>
+  <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
+    <table class="table align-middle small">
+      <thead class="table-light"><tr><th>صورة</th><th>الاسم</th><th>السعر</th><th>الكمية</th><th>المخزون</th><th>التصنيف</th><th>الوصف</th><th></th></tr></thead>
+      <tbody>
+      <?php while ($p = mysqli_fetch_assoc($products)): ?>
+        <tr>
+          <td><img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" style="width:45px;height:45px;object-fit:contain"></td>
+          <form method="post">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="action" value="edit_product">
+            <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
+            <td><input type="text" name="p_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
+            <td style="width:90px"><input type="number" name="p_price" class="form-control form-control-sm" value="<?php echo (int)$p['p_price']; ?>"></td>
+            <td style="width:90px"><input type="number" name="p_quantity" class="form-control form-control-sm" value="<?php echo (int)$p['p_quantity']; ?>"></td>
+            <td><?php $qq = (int)$p['p_quantity']; echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
+            <td style="width:130px">
+              <select name="category_id" class="form-select form-select-sm">
+                <option value="0">—</option>
+                <?php foreach ($catsAll as $c): ?>
+                <option value="<?php echo (int)$c['cat_id']; ?>" <?php echo (int)($p['category_id'] ?? 0) === (int)$c['cat_id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['cat_name'], ENT_QUOTES); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </td>
+            <td><input type="text" name="p_describe" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
+            <td class="text-nowrap">
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-save"></i> حفظ</button>
+          </form>
+          <form method="post" class="d-inline" onsubmit="return confirm('حذف المنتج نهائيًا؟')">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="action" value="delete_product">
+            <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+            </td>
+        </tr>
+      <?php endwhile; ?>
+      </tbody>
+    </table>
+  </div>
   <?php endif; ?>
 
   <!-- ===== المستخدمون ===== -->

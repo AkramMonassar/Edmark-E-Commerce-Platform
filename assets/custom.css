@@ -163,3 +163,20 @@
 }
 .qty-stepper input:focus, .qty-input:focus { outline: none; }
 .qty-input.pop, .qty-stepper input.pop { animation: pop .3s ease; }
+
+/* زر واتساب عائم */
+#waBtn {
+    position: fixed;
+    right: 20px; bottom: 20px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #25d366;
+    color: #fff;
+    font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    z-index: 1050;
+    transition: transform .3s;
+    text-decoration: none;
+}
+#waBtn:hover { transform: scale(1.12) rotate(6deg); color: #fff; }
