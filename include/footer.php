@@ -83,10 +83,11 @@
       badge.textContent = s.count;
       badge.classList.toggle('d-none', s.count === 0);
     }
+    const fin = (s.total_after ?? s.total); // ← جديد
     if (total) {
-      total.textContent = s.total + '$';
-      total.classList.toggle('d-none', s.total === 0);
-    }
+      total.textContent = fin + '$';
+      total.classList.toggle('d-none', fin === 0);
+    } // ← استُبدل
   }
 
   function toast(msg, type = 'success') {
@@ -200,6 +201,56 @@
       }, 400);
     });
   });
+
+  /* ===== 6) الكوبونات ===== */
+  const couponForm = document.getElementById('couponForm');
+  if (couponForm) {
+    const cState = document.getElementById('couponState');
+    const refreshCouponUI = s => {
+      updateCartUI(s);
+      const set = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
+      };
+      set('sumTotal', s.total + '$');
+      set('sumDiscount', '-' + s.discount + '$');
+      set('sumCode', s.code ? '(' + s.code + ')' : '');
+      set('sumFinal', s.total_after + '$');
+    };
+    const bindRemove = () => {
+      const rm = document.getElementById('rmCoupon');
+      if (rm) rm.addEventListener('click', async ev => {
+        ev.preventDefault();
+        const r2 = await api('coupon_remove');
+        if (r2.ok) {
+          refreshCouponUI(r2);
+          cState.textContent = '';
+        }
+      });
+    };
+    bindRemove();
+    couponForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const code = document.getElementById('couponInput').value.trim();
+      if (!code) return;
+      const r = await api('coupon', {
+        code
+      });
+      if (r.ok) {
+        refreshCouponUI(r);
+        cState.innerHTML = '✅ الكوبون مطبق — <a href="#" id="rmCoupon" class="text-danger">إزالة</a>';
+        bindRemove();
+      } else {
+        const msgs = {
+          not_found: 'كود غير صالح',
+          expired: 'الكوبون منتهي الصلاحية',
+          min_total: 'الحد الأدنى للطلب: ' + (r.min || 0) + '$',
+          empty_code: 'أدخل الكود'
+        };
+        cState.innerHTML = '<span class="text-danger">❌ ' + (msgs[r.error] || 'خطأ') + '</span>';
+      }
+    });
+  }
 </script>
 </body>
 

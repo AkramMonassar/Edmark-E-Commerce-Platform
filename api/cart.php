@@ -3,6 +3,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../include/csrf.php';
 require_once __DIR__ . '/../connection/connection.php';
+require_once __DIR__ . '/../include/coupon.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -14,9 +15,7 @@ function respond($ok, $data = [])
 
 function cartStatus($con_db, $uid)
 {
-    $res = mysqli_query($con_db, "SELECT SUM(c_total) AS t, COUNT(id) AS c FROM cart WHERE u_id = $uid");
-    $r = $res ? mysqli_fetch_assoc($res) : null;
-    return ['count' => (int)($r['c'] ?? 0), 'total' => (int)($r['t'] ?? 0)];
+    return couponInfo($con_db, $uid);
 }
 
 if (!isset($_SESSION['u_id'])) respond(false, ['error' => 'login_required']);
@@ -76,5 +75,20 @@ if ($action === 'clear') {
     mysqli_query($con_db, "DELETE FROM cart WHERE u_id = $uid");
     respond(true, cartStatus($con_db, $uid));
 }
+if ($action === 'coupon') {
+    $code = strtoupper(trim($_POST['code'] ?? ''));
+    if ($code === '') respond(false, ['error' => 'empty_code']);
+    $ce = mysqli_real_escape_string($con_db, $code);
+    $cp = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT * FROM coupons WHERE code = '$ce' AND active = 1"));
+    if (!$cp) respond(false, ['error' => 'not_found']);
+    if (!is_null($cp['expires_at']) && strtotime($cp['expires_at']) < strtotime(date('Y-m-d'))) respond(false, ['error' => 'expired']);
+    if (couponInfo($con_db, $uid)['total'] < (int)$cp['min_total']) respond(false, ['error' => 'min_total', 'min' => (int)$cp['min_total']]);
+    $_SESSION['coupon_code'] = $code;
+    respond(true, couponInfo($con_db, $uid));
+}
 
+if ($action === 'coupon_remove') {
+    unset($_SESSION['coupon_code']);
+    respond(true, couponInfo($con_db, $uid));
+}
 respond(false, ['error' => 'unknown_action']);

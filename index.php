@@ -6,29 +6,30 @@ require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
 
 if (isset($_POST['addtocart'])) {
-  csrf_check();
-  if (!isset($_SESSION['u_id'])) {
-    header("Location: login.php");
-    exit;
-  }
-  $uid = (int) $_SESSION['u_id'];
-  $id  = (int) $_POST['id'];
-  $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
-  if ($res && ($row = mysqli_fetch_assoc($res))) {
-    $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
-    if ($check && mysqli_num_rows($check) == 0) {
-      $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
-      $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
-      $price    = (int) $row['p_price'];
-      mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
+    csrf_check();
+    if (!isset($_SESSION['u_id'])) {
+        header("Location: login.php");
+        exit;
     }
-  }
-  if ((int)$row['p_quantity'] <= 0) {
-    header("Location: index.php?out=1");
+    $uid = (int) $_SESSION['u_id'];
+    $id  = (int) $_POST['id'];
+    $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
+    if ($res && ($row = mysqli_fetch_assoc($res))) {
+        // ✅ فحص المخزون قبل الإدراج وليس بعده
+        if ((int)$row['p_quantity'] <= 0) {
+            header("Location: index.php?out=1");
+            exit;
+        }
+        $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
+        if ($check && mysqli_num_rows($check) == 0) {
+            $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
+            $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
+            $price    = (int) $row['p_price'];
+            mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
+        }
+    }
+    header("Location: index.php?added=1");
     exit;
-  }
-  header("Location: index.php?added=1");
-  exit;
 }
 include("include/header.php");
 ?>
@@ -131,7 +132,7 @@ include("include/header.php");
         $delay = ($i % 4) * 100;
         $i++;
     ?>
-    
+
         <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
           <div class="card h-100 shadow-sm">
             <a href="details.php?id=<?php echo $pid; ?>">
@@ -140,6 +141,13 @@ include("include/header.php");
               </div>
             </a>
             <div class="card-body text-center d-flex flex-column">
+              <h6 class="card-title"><?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?></h6>
+              <p class="fw-bold text-brand mb-1"><?php echo (int) $p['p_price']; ?>$</p>
+              <?php
+              $ra = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT AVG(rating) a, COUNT(*) c FROM reviews WHERE product_id = $pid"));
+              if ((int)$ra['c'] > 0): ?>
+                <small class="text-warning d-block mb-2"><?php echo str_repeat('★', (int) round((float)$ra['a'])); ?> <span class="text-muted">(<?php echo (int)$ra['c']; ?>)</span></small>
+              <?php endif; ?>
               <?php if ($stock > 0 && $stock <= 5): ?>
                 <small class="text-warning mb-2">⚠ باقي <?php echo $stock; ?> فقط</small>
               <?php endif; ?>
@@ -157,21 +165,21 @@ include("include/header.php");
             </div>
           </div>
         </div>
-    <?php
-        }
+      <?php
+      }
     } else {
-    ?>
-    <div class="col-12">
-      <div class="alert alert-light border text-center py-5">
-        <i class="bi bi-search text-brand" style="font-size:3rem"></i>
-        <h5 class="mt-3">لا توجد نتائج مطابقة</h5>
-        <a href="index.php" class="btn btn-brand btn-sm mt-2">عرض كل المنتجات</a>
+      ?>
+      <div class="col-12">
+        <div class="alert alert-light border text-center py-5">
+          <i class="bi bi-search text-brand" style="font-size:3rem"></i>
+          <h5 class="mt-3">لا توجد نتائج مطابقة</h5>
+          <a href="index.php" class="btn btn-brand btn-sm mt-2">عرض كل المنتجات</a>
+        </div>
       </div>
-    </div>
     <?php } ?>
   </div>
 </div>
-  </div>
+</div>
 </div>
 
 <?php

@@ -10,6 +10,8 @@ if (!isset($_SESSION['u_id'])) {
 $uid = (int) $_SESSION['u_id'];
 $uRow = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT u_email, u_name FROM users WHERE u_id = $uid"));
 $userEmail = $uRow['u_email'] ?? '';
+require_once __DIR__ . '/include/coupon.php';
+$ci = couponInfo($con_db, $uid);
 
 $providers = [
   'wallets' => [
@@ -73,7 +75,9 @@ if (isset($_POST['submit'])) {
   csrf_check();
 
   $r = mysqli_fetch_assoc(mysqli_query($con_db, "SELECT SUM(c_total) AS t FROM cart WHERE u_id = $uid"));
-  $cartTotal = (int) ($r['t'] ?? 0);
+  $cartTotal = $ci['total_after'];
+  $discount  = $ci['discount'];
+  $cCode     = $ci['code'];
 
   // ===== بيانات التوصيل =====
   $cName = trim($_POST['c_name'] ?? '');
@@ -174,7 +178,8 @@ if (isset($_POST['submit'])) {
         $cc = $esc($city);
         $ca = $esc($addr);
         $det_esc = $esc($details);
-        mysqli_query($con_db, "INSERT INTO orders (u_id, total, status, payment_method, method_details, customer_name, customer_phone, city, address) VALUES ($uid, $cartTotal, '$status', '$method', '$det_esc', '$cn', '$cp', '$cc', '$ca')");
+        $cCodeEsc = $esc($cCode);
+        mysqli_query($con_db, "INSERT INTO orders (u_id, total, discount, coupon_code, status, payment_method, method_details, customer_name, customer_phone, city, address) VALUES ($uid, $cartTotal, $discount, '$cCodeEsc', '$status', '$method', '$det_esc', '$cn', '$cp', '$cc', '$ca')");
         $orderId = mysqli_insert_id($con_db);
 
         foreach ($cartRows as $c) {
@@ -272,6 +277,11 @@ if ($res) {
             </ul>
             <hr>
             <div class="d-flex justify-content-between fw-bold fs-5">
+              <?php if ($ci['discount'] > 0): ?>
+                <div class="d-flex justify-content-between small text-success">
+                  <span>خصم الكوبون (<?php echo htmlspecialchars($ci['code'], ENT_QUOTES); ?>)</span><span>-<?php echo $ci['discount']; ?>$</span>
+                </div>
+              <?php endif; ?>
               <span>الإجمالي</span><span class="text-brand"><?php echo $cartTotal; ?>$</span>
             </div>
           <?php endif; ?>

@@ -8,6 +8,8 @@ if (!isset($_SESSION['u_id'])) {
     exit;
 }
 $uid = (int) $_SESSION['u_id'];
+require_once __DIR__ . '/include/coupon.php';
+$ci = couponInfo($con_db, $uid);
 
 if (isset($_POST['change2'])) {
     csrf_check();
@@ -92,9 +94,28 @@ $count = $result2 ? mysqli_num_rows($result2) : 0;
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" data-aos="fade-up">
+            <div class="row g-3 mt-1 align-items-stretch">
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-sm p-3 h-100">
+                        <form id="couponForm" class="d-flex gap-2">
+                            <input type="text" id="couponInput" class="form-control" placeholder="كود الخصم (جرّب: EDMARK10)" style="text-transform:uppercase">
+                            <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-ticket-perforated"></i> تطبيق</button>
+                        </form>
+                        <div id="couponState" class="small mt-2"><?php if ($ci['code'] !== ''): ?>✅ الكوبون مطبق — <a href="#" id="rmCoupon" class="text-danger">إزالة</a><?php endif; ?></div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card border-0 shadow-sm p-3 h-100">
+                        <div class="d-flex justify-content-between"><span>المجموع:</span><b id="sumTotal"><?php echo $ci['total']; ?>$</b></div>
+                        <div class="d-flex justify-content-between text-success"><span>الخصم <span id="sumCode"><?php echo $ci['code'] ? '(' . htmlspecialchars($ci['code'], ENT_QUOTES) . ')' : ''; ?></span>:</span><b id="sumDiscount">-<?php echo $ci['discount']; ?>$</b></div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fs-5 fw-bold"><span>الإجمالي بعد الخصم:</span><span class="text-brand" id="sumFinal"><?php echo $ci['total_after']; ?>$</span></div>
+                    </div>
+                </div>
+            </div>
             <form method="post">
                 <?php echo csrf_field(); ?>
-                <button type="submit" name="deleteAll" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> تفريغ السلة</button>
+                <button type="submit" name="deleteAll" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> </button>تفريغ السلة</button>
             </form>
             <a href="checkout.php" class="btn btn-brand btn-lg"><i class="bi bi-credit-card"></i> إتمام الدفع</a>
         </div>
