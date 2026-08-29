@@ -24,7 +24,28 @@ if (isset($_SESSION['u_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>إدمارك | متجر المنتجات العشبية</title>
+    <?php
+    $pageTitle = 'متجر إدمارك';
+    $pageDesc  = 'متجر إلكتروني لعرض وبيع المنتجات الصحية والعشبية ومنتجات العناية.';
+
+    if (basename($_SERVER['SCRIPT_NAME']) === 'details.php' && isset($_GET['id'])) {
+        if (isset($con_db)) {
+            $seoPid = (int)$_GET['id'];
+            $seoRes = mysqli_query($con_db, "SELECT p_name, p_describe FROM product WHERE p_id = $seoPid LIMIT 1");
+
+            if ($seoRes && ($seoProduct = mysqli_fetch_assoc($seoRes))) {
+                $pageTitle = $seoProduct['p_name'] . ' | متجر إدمارك';
+                $pageDesc  = mb_substr(strip_tags($seoProduct['p_describe']), 0, 155);
+            }
+        }
+    }
+    ?>
+
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($pageDesc, ENT_QUOTES); ?>">
+    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle, ENT_QUOTES); ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($pageDesc, ENT_QUOTES); ?>">
+    <meta property="og:type" content="website">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">

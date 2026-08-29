@@ -8,3 +8,4 @@ Thumbs.db
 
 config/email.php
 vendor/config/email.php 
+backups/ 

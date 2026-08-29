@@ -199,6 +199,11 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'products' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=products">📦 المنتجات</a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'users' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=users">👥 المستخدمون</a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'coupons' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=coupons">🎟️ كوبونات</a></li>
+    <li class="nav-item">
+  <a class="nav-link <?php echo $tab === 'backup' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=backup">
+    💾 النسخ الاحتياطي
+  </a>
+</li>
   </ul>
 
   <!-- ===== الإحصائيات ===== -->
@@ -469,7 +474,63 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
     </div>
   <?php endif; ?>
 </div>
+<?php if ($tab === 'backup'): ?>
+  <div class="card border-0 shadow-sm" data-aos="fade-up">
+    <div class="card-body">
+      <h5 class="mb-3"><i class="bi bi-database text-brand"></i> النسخ الاحتياطي</h5>
 
+      <?php if (isset($_GET['backup_done'])): ?>
+        <div class="alert alert-success py-2">تم إنشاء النسخة الاحتياطية بنجاح ✅</div>
+      <?php endif; ?>
+
+      <p class="text-muted">
+        من هنا يمكنك إنشاء نسخة احتياطية من قاعدة البيانات. سيتم حفظ الملفات داخل مجلد
+        <code>backups/</code>.
+      </p>
+
+      <a href="backup.php" class="btn btn-brand" onclick="return confirm('هل تريد إنشاء نسخة احتياطية الآن؟')">
+        <i class="bi bi-download"></i> إنشاء نسخة احتياطية
+      </a>
+
+      <?php
+      $backupDir = __DIR__ . '/backups';
+
+      if (is_dir($backupDir)):
+          $files = glob($backupDir . '/*.sql');
+          rsort($files);
+      ?>
+
+      <h6 class="mt-4">آخر النسخ الاحتياطية</h6>
+
+      <?php if (empty($files)): ?>
+        <p class="text-muted">لا توجد نسخ احتياطية بعد.</p>
+      <?php else: ?>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>اسم الملف</th>
+                <th>التاريخ</th>
+                <th>الحجم</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach (array_slice($files, 0, 10) as $file): ?>
+                <tr>
+                  <td><?php echo htmlspecialchars(basename($file), ENT_QUOTES); ?></td>
+                  <td><?php echo date('Y-m-d H:i', filemtime($file)); ?></td>
+                  <td><?php echo number_format(filesize($file) / 1024, 1); ?> KB</td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
+
+      <?php endif; ?>
+    </div>
+  </div>
+<?php endif; ?>
 <?php
 include("include/footer.php");
 ?>

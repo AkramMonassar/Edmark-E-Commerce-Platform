@@ -4,32 +4,33 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
+require_once __DIR__ . '/include/pagination.php';
 
 if (isset($_POST['addtocart'])) {
-    csrf_check();
-    if (!isset($_SESSION['u_id'])) {
-        header("Location: login.php");
-        exit;
-    }
-    $uid = (int) $_SESSION['u_id'];
-    $id  = (int) $_POST['id'];
-    $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
-    if ($res && ($row = mysqli_fetch_assoc($res))) {
-        // ✅ فحص المخزون قبل الإدراج وليس بعده
-        if ((int)$row['p_quantity'] <= 0) {
-            header("Location: index.php?out=1");
-            exit;
-        }
-        $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
-        if ($check && mysqli_num_rows($check) == 0) {
-            $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
-            $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
-            $price    = (int) $row['p_price'];
-            mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
-        }
-    }
-    header("Location: index.php?added=1");
+  csrf_check();
+  if (!isset($_SESSION['u_id'])) {
+    header("Location: login.php");
     exit;
+  }
+  $uid = (int) $_SESSION['u_id'];
+  $id  = (int) $_POST['id'];
+  $res = mysqli_query($con_db, "SELECT * FROM product WHERE p_id = $id");
+  if ($res && ($row = mysqli_fetch_assoc($res))) {
+    // ✅ فحص المخزون قبل الإدراج وليس بعده
+    if ((int)$row['p_quantity'] <= 0) {
+      header("Location: index.php?out=1");
+      exit;
+    }
+    $check = mysqli_query($con_db, "SELECT * FROM cart WHERE id = $id AND u_id = $uid");
+    if ($check && mysqli_num_rows($check) == 0) {
+      $name_esc = mysqli_real_escape_string($con_db, $row['p_name']);
+      $img_esc  = mysqli_real_escape_string($con_db, $row['p_img']);
+      $price    = (int) $row['p_price'];
+      mysqli_query($con_db, "INSERT INTO cart (u_id, id, c_name, c_price, c_total, c_img) VALUES ($uid, $id, '$name_esc', $price, $price, '$img_esc')");
+    }
+  }
+  header("Location: index.php?added=1");
+  exit;
 }
 include("include/header.php");
 ?>
@@ -74,16 +75,28 @@ include("include/header.php");
   $cat  = (int) ($_GET['cat'] ?? 0);
   $sort = $_GET['sort'] ?? '';
 
+  $page = max(1, (int)($_GET['page'] ?? 1));
+  $perPage = 8;
+
   $cats = [];
   $rc = mysqli_query($con_db, "SELECT * FROM categories ORDER BY cat_id");
-  if ($rc) while ($c = mysqli_fetch_assoc($rc)) $cats[] = $c;
+  if ($rc) {
+    while ($c = mysqli_fetch_assoc($rc)) {
+      $cats[] = $c;
+    }
+  }
 
   $where = [];
+
   if ($q !== '') {
     $qe = mysqli_real_escape_string($con_db, $q);
     $where[] = "(p_name LIKE '%$qe%' OR p_describe LIKE '%$qe%')";
   }
-  if ($cat > 0) $where[] = "category_id = $cat";
+
+  if ($cat > 0) {
+    $where[] = "category_id = $cat";
+  }
+
   $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
   $orderSql = match ($sort) {
@@ -93,6 +106,15 @@ include("include/header.php");
     'rating'     => 'ORDER BY (SELECT AVG(rating) FROM reviews r WHERE r.product_id = product.p_id) DESC',
     default      => 'ORDER BY p_id',
   };
+
+  $countRes = mysqli_query($con_db, "SELECT COUNT(*) AS total FROM product $whereSql");
+  $countRow = $countRes ? mysqli_fetch_assoc($countRes) : ['total' => 0];
+  $totalProducts = (int)$countRow['total'];
+
+  $offset = ($page - 1) * $perPage;
+  $limitSql = "LIMIT $perPage OFFSET $offset";
+
+  $baseUrl = 'index.php?q=' . urlencode($q) . '&cat=' . $cat . '&sort=' . urlencode($sort);
   ?>
 
   <form method="get" action="index.php" class="row g-2 mb-4" data-aos="fade-up">
@@ -123,7 +145,7 @@ include("include/header.php");
 
   <div class="row g-4">
     <?php
-    $result = mysqli_query($con_db, "SELECT * FROM product $whereSql $orderSql");
+    $result = mysqli_query($con_db, "SELECT * FROM product $whereSql $orderSql $limitSql");
     $i = 0;
     if ($result && mysqli_num_rows($result) > 0) {
       while ($p = mysqli_fetch_assoc($result)) {
@@ -176,12 +198,14 @@ include("include/header.php");
           <a href="index.php" class="btn btn-brand btn-sm mt-2">عرض كل المنتجات</a>
         </div>
       </div>
-    <?php } ?>
-  </div>
-</div>
-</div>
+<?php } ?>
 </div>
 
+<?php if ($totalProducts > $perPage): ?>
+  <?php echo paginate($totalProducts, $perPage, $page, $baseUrl); ?>
+<?php endif; ?>
+
+</div>
 <?php
 include("include/footer.php");
 ?>
