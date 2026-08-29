@@ -180,3 +180,31 @@
     text-decoration: none;
 }
 #waBtn:hover { transform: scale(1.12) rotate(6deg); color: #fff; }
+
+/* ===== ترقيم الصفحات بهوية الموقع ===== */
+.pagination .page-link {
+    color: var(--brand);
+    border: 1px solid #e3e6e9;
+    border-radius: .6rem !important;
+    margin: 0 3px;
+    font-weight: 600;
+    transition: all .25s ease;
+}
+.pagination .page-link:hover {
+    background: #e8f5e9;
+    color: var(--brand-dark);
+    transform: translateY(-2px);
+}
+.pagination .page-item.active .page-link {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(46,125,50,.35);
+}
+.pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    background: #f8f9fa;
+}
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 .2rem rgba(46,125,50,.15);
+}
