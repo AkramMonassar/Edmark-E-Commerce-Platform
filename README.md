@@ -39,7 +39,7 @@ A full-featured e-commerce store built with **PHP 8 + MySQL + Bootstrap 5** — 
 3. Copy `connection/connection.example.php` → `connection/connection.php` and fill credentials.
 4. Copy `config/email.example.php` → `config/email.php` and set a Gmail App Password.
 
-**Demo admin:** `alasbahi123@gmail.com / 123`
+**Demo admin:** `alasbahi123@gmail.com / 0000`
 
 ## 🧰 Stack
 
