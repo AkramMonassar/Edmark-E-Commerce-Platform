@@ -5,7 +5,7 @@ require_once __DIR__ . '/connection/connection.php';
 
 // ===== حماية: أدمن فقط =====
 if (!isset($_SESSION['u_id'])) {
-  header("Location: login.php");
+  header("Location: Login.php");
   exit;
 }
 $uid = (int) $_SESSION['u_id'];
@@ -108,6 +108,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_query($con_db, "UPDATE product SET p_name='$name', p_price=$price, p_quantity=$qty, p_describe='$desc', category_id=$catSql WHERE p_id=$pid");   // ← استُبدل (أضيف category_id)
     $flash = "تم تحديث المنتج #$pid ✅";
     $tab = 'products';
+  } elseif ($action === 'delete_product') {
+    $pid = (int) ($_POST['p_id'] ?? 0);
+    mysqli_query($con_db, "DELETE FROM product WHERE p_id=$pid");
+    mysqli_query($con_db, "DELETE FROM cart WHERE id=$pid");
+    $flash = "تم حذف المنتج #$pid 🗑️";
+    $tab = 'products';
   } elseif ($action === 'delete_user') {
     $tid = (int) ($_POST['user_id'] ?? 0);
     if ($tid !== $uid) {
@@ -122,13 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($tid !== $uid) {
       mysqli_query($con_db, "UPDATE users SET u_type = IF(u_type='admin','user','admin') WHERE u_id=$tid");
       $flash = "تم تغيير صلاحية المستخدم #$tid";
-    }
-    $tab = 'users';
-  } elseif ($action === 'delete_user') {
-    $tid = (int) ($_POST['user_id'] ?? 0);
-    if ($tid !== $uid) {
-      mysqli_query($con_db, "DELETE FROM users WHERE u_id=$tid AND u_type!='admin'");
-      $flash = "تم حذف المستخدم #$tid";
     }
     $tab = 'users';
   } elseif ($action === 'add_coupon') {
@@ -200,10 +199,10 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'users' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=users">👥 المستخدمون</a></li>
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'coupons' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=coupons">🎟️ كوبونات</a></li>
     <li class="nav-item">
-  <a class="nav-link <?php echo $tab === 'backup' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=backup">
-    💾 النسخ الاحتياطي
-  </a>
-</li>
+      <a class="nav-link <?php echo $tab === 'backup' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=backup">
+        💾 النسخ الاحتياطي
+      </a>
+    </li>
   </ul>
 
   <!-- ===== الإحصائيات ===== -->
@@ -321,7 +320,10 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
         </form>
       </div>
     </div>
-
+    <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+      <h6 class="mb-0">جدول المنتجات</h6>
+      <button id="saveAllProducts" class="btn btn-brand btn-sm"><i class="bi bi-save2"></i> حفظ كل التعديلات</button>
+    </div>
     <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
       <table class="table align-middle small">
         <thead class="table-light">
@@ -338,35 +340,30 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
         </thead>
         <tbody>
           <?php while ($p = mysqli_fetch_assoc($products)): ?>
-            <tr>
+            <tr data-pid="<?php echo (int)$p['p_id']; ?>">
               <td><img src="<?php echo htmlspecialchars($p['p_img'], ENT_QUOTES); ?>" style="width:45px;height:45px;object-fit:contain"></td>
-              <form method="post">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="edit_product">
-                <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
-                <td><input type="text" name="p_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
-                <td style="width:90px"><input type="number" name="p_price" class="form-control form-control-sm" value="<?php echo (int)$p['p_price']; ?>"></td>
-                <td style="width:90px"><input type="number" name="p_quantity" class="form-control form-control-sm" value="<?php echo (int)$p['p_quantity']; ?>"></td>
-                <td><?php $qq = (int)$p['p_quantity'];
-                    echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
-                <td style="width:130px">
-                  <select name="category_id" class="form-select form-select-sm">
-                    <option value="0">—</option>
-                    <?php foreach ($catsAll as $c): ?>
-                      <option value="<?php echo (int)$c['cat_id']; ?>" <?php echo (int)($p['category_id'] ?? 0) === (int)$c['cat_id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['cat_name'], ENT_QUOTES); ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </td>
-                <td><input type="text" name="p_describe" class="form-control form-control-sm" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
-                <td class="text-nowrap">
-                  <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-save"></i> حفظ</button>
-              </form>
-              <form method="post" class="d-inline" onsubmit="return confirm('حذف المنتج نهائيًا؟')">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="action" value="delete_product">
-                <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
-                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-              </form>
+              <td><input type="text" class="form-control form-control-sm f-name" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
+              <td style="width:90px"><input type="number" class="form-control form-control-sm f-price" value="<?php echo (int)$p['p_price']; ?>"></td>
+              <td style="width:90px"><input type="number" class="form-control form-control-sm f-qty" value="<?php echo (int)$p['p_quantity']; ?>"></td>
+              <td><?php $qq = (int)$p['p_quantity'];
+                  echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
+              <td style="width:130px">
+                <select class="form-select form-select-sm f-cat">
+                  <option value="0">—</option>
+                  <?php foreach ($catsAll as $c): ?>
+                    <option value="<?php echo (int)$c['cat_id']; ?>" <?php echo (int)($p['category_id'] ?? 0) === (int)$c['cat_id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($c['cat_name'], ENT_QUOTES); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </td>
+              <td><input type="text" class="form-control form-control-sm f-desc" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
+              <td class="text-nowrap">
+                <button type="button" class="btn btn-sm btn-outline-secondary save-one" title="حفظ هذا المنتج فقط"><i class="bi bi-save"></i> حفظ</button>
+                <form method="post" class="d-inline">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="action" value="delete_product">
+                  <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
               </td>
             </tr>
           <?php endwhile; ?>
@@ -404,7 +401,7 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
                     <button class="btn btn-sm btn-outline-warning"><i class="bi bi-shield-toggle"></i> تبديل الصلاحية</button>
                   </form>
                   <?php if ($u['u_type'] !== 'admin'): ?>
-                    <form method="post" class="d-inline" onsubmit="return confirm('حذف المستخدم؟')">
+                    <form method="post" class="d-inline">
                       <?php echo csrf_field(); ?>
                       <input type="hidden" name="action" value="delete_user">
                       <input type="hidden" name="user_id" value="<?php echo (int)$u['u_id']; ?>">
@@ -496,41 +493,42 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       $backupDir = __DIR__ . '/backups';
 
       if (is_dir($backupDir)):
-          $files = glob($backupDir . '/*.sql');
-          rsort($files);
+        $files = glob($backupDir . '/*.sql');
+        rsort($files);
       ?>
 
-      <h6 class="mt-4">آخر النسخ الاحتياطية</h6>
+        <h6 class="mt-4">آخر النسخ الاحتياطية</h6>
 
-      <?php if (empty($files)): ?>
-        <p class="text-muted">لا توجد نسخ احتياطية بعد.</p>
-      <?php else: ?>
-        <div class="table-responsive">
-          <table class="table table-sm align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>اسم الملف</th>
-                <th>التاريخ</th>
-                <th>الحجم</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach (array_slice($files, 0, 10) as $file): ?>
+        <?php if (empty($files)): ?>
+          <p class="text-muted">لا توجد نسخ احتياطية بعد.</p>
+        <?php else: ?>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
                 <tr>
-                  <td><?php echo htmlspecialchars(basename($file), ENT_QUOTES); ?></td>
-                  <td><?php echo date('Y-m-d H:i', filemtime($file)); ?></td>
-                  <td><?php echo number_format(filesize($file) / 1024, 1); ?> KB</td>
+                  <th>اسم الملف</th>
+                  <th>التاريخ</th>
+                  <th>الحجم</th>
                 </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      <?php endif; ?>
+              </thead>
+              <tbody>
+                <?php foreach (array_slice($files, 0, 10) as $file): ?>
+                  <tr>
+                    <td><?php echo htmlspecialchars(basename($file), ENT_QUOTES); ?></td>
+                    <td><?php echo date('Y-m-d H:i', filemtime($file)); ?></td>
+                    <td><?php echo number_format(filesize($file) / 1024, 1); ?> KB</td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif; ?>
 
       <?php endif; ?>
     </div>
   </div>
 <?php endif; ?>
+<script src="assets/admin.js"></script>
 <?php
 include("include/footer.php");
 ?>
