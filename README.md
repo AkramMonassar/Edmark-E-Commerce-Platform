@@ -24,19 +24,19 @@
 
 | الرئيسية | التقارير |
 |---|---|
-| ![home](screenshots/home.png) | ![reports](screenshots/reports.png) |
+| ![home](Captures/home.png) | ![reports](Captures/reports.png) |
 
 | السلة + كوبون | الدفع |
 |---|---|
-| ![cart](screenshots/cart.png) | ![checkout](screenshots/checkout.png) |
+| ![cart](Captures/cart.png) | ![checkout](Captures/checkout.png) |
 
 | لوحة الطلبات | استعادة كلمة المرور |
 |---|---|
-| ![admin-orders](screenshots/admin-orders.png) | ![reset](screenshots/reset.png) |
+| ![admin-orders](Captures/admin-orders.png) | ![reset](Captures/reset.png) |
 
 | عرض الجوال | التفاصيل والتقييمات |
 |---|---|
-| ![mobile](screenshots/mobile.png) | ![details](screenshots/details.png) |
+| ![mobile](Captures/mobile.png) | ![details](Captures/details.png) |
 
 ## 🚀 التشغيل محليًا
 
