@@ -22,15 +22,15 @@ A full-featured e-commerce store built with **PHP 8 + MySQL + Bootstrap 5** — 
 
 | Home | Reports |
 |---|---|
-| ![home](screenshots/home.png) | ![reports](screenshots/reports.png) |
+| ![home](Captures/home.png) | ![reports](Captures/reports.png) |
 
 | Cart + Coupon | Checkout |
 |---|---|
-| ![cart](screenshots/cart.png) | ![checkout](screenshots/checkout.png) |
+| ![cart](Captures/cart.png) | ![checkout](Captures/checkout.png) |
 
 | Admin Orders | Password Reset |
 |---|---|
-| ![admin-orders](screenshots/admin-orders.png) | ![reset](screenshots/reset.png) |
+| ![admin-orders](Captures/admin-orders.png) | ![reset](Captures/reset.png) |
 
 ## 🚀 Run Locally
 
