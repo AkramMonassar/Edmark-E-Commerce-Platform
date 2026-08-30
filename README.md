@@ -1,81 +1,46 @@
 # 🌿 Edmark E-Commerce Platform
 
-متجر إلكتروني متكامل مبني بـ **PHP + MySQL + Bootstrap 5** — تطوّر من مشروع جامعي (2017) إلى منصة بيع حديثة وآمنة: سلة حية، دفع متعدد الطرق، لوحة تحكم، تقارير، وتسويق.
+A full-featured e-commerce store built with **PHP 8 + MySQL + Bootstrap 5** — evolved from a 2017 class project into a modern, secure shop: live cart, multi-method payments, admin dashboard, reports, coupons, reviews and more.
 
-## ✨ الميزات
+> 🇾🇪 Arabic version: [README.ar.md](README.ar.md)
 
-### 🛒 تجربة العميل
-- كتالوج منتجات مع **بحث + تصنيفات + فرز + ترقيم صفحات**
-- سلة حية لكل مستخدم (AJAX بدون تحميل) مع عدّاد كمية ذكي وكوبونات خصم
-- دفع متعدد: عند الاستلام، **13 محفظة يمنية**، 7 صرافات، بطاقات عالمية (محاكاة بوابة مع كشف نوع البطاقة)، وتقسيط BNPL
-- تتبع الطلبات بصفحة "طلباتي" + إيميلات تأكيد تلقائية
-- تقييمات ومراجعات بنجوم + زر واتساب عائم + استعادة كلمة مرور برابط مؤقت وعدّاد تنازلي
+## 🎥 Demo (60s)
 
-### 🛡️ الأمان
-- كلمات مرور **bcrypt** مع ترقية تلقائية للقديم، Prepared Statements، CSRF Tokens، XSS escaping
-- Rate Limiting للدخول والاستعادة، صلاحيات أدمن، رفع صور مُتحقق منه (نوع + حجم)
+[![Watch demo](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/VIDEO_ID)
 
-### 👨‍💼 لوحة التحكم والتقارير
-- إدارة: طلبات (تأكيد/إلغاء مع إرجاع مخزون)، منتجات + تصنيفات، مستخدمون وصلاحيات، كوبونات
-- **مخزون حي**: خصم تلقائي مع كل طلب + تنبيهات انخفاض/نفاد
-- تقارير KPI برسوم Chart.js + قراءات إدارية تلقائية + تصدير CSV للعربية
+## ✨ Features
 
-## 📸 لقطات
+- 🛒 Live per-user cart (AJAX), smart quantity stepper, coupons, real-time stock
+- 💳 Checkout: COD, 13 Yemeni wallets, 7 exchange companies, card simulation (Luhn + brand detection), BNPL
+- 🔐 bcrypt + lazy hash upgrade, CSRF, rate limiting, password reset with email countdown
+- 🧑‍ Admin: orders (confirm/cancel + auto restock), AJAX product/user/coupon editing, backups
+- 📊 KPI reports with Chart.js + Arabic-ready CSV export
+- 🔍 Search, categories, sorting, pagination, SEO, reviews with star ratings
+- 📱 RTL Bootstrap 5 UI with animations + floating WhatsApp
 
-| الرئيسية | التقارير |
+## 📸 Screenshots
+
+| Home | Reports |
 |---|---|
-| ![home](Captures/home.png) | ![reports](Captures/reports.png) |
+| ![home](screenshots/home.png) | ![reports](screenshots/reports.png) |
 
-| السلة + كوبون | الدفع |
+| Cart + Coupon | Checkout |
 |---|---|
-| ![cart](Captures/cart.png) | ![checkout](Captures/checkout.png) |
+| ![cart](screenshots/cart.png) | ![checkout](screenshots/checkout.png) |
 
-| لوحة الطلبات | استعادة كلمة المرور |
+| Admin Orders | Password Reset |
 |---|---|
-| ![admin-orders](Captures/admin-orders.png) | ![reset](Captures/reset.png) |
+| ![admin-orders](screenshots/admin-orders.png) | ![reset](screenshots/reset.png) |
 
-| عرض الجوال | التفاصيل والتقييمات |
-|---|---|
-| ![mobile](Captures/mobile.png) | ![details](Captures/details.png) |
+## 🚀 Run Locally
 
-## 🚀 التشغيل محليًا
+1. Install XAMPP, place project in `htdocs/`.
+2. Import `Db/database.sql` via phpMyAdmin.
+3. Copy `connection/connection.example.php` → `connection/connection.php` and fill credentials.
+4. Copy `config/email.example.php` → `config/email.php` and set a Gmail App Password.
 
-1. ثبّت **XAMPP** وضع المشروع بـ `htdocs/`.
-2. استورد `Db/database.sql` من phpMyAdmin.
-3. انسخ `connection/connection.example.php` إلى `connection/connection.php` وعبّئ بياناتك.
-4. انسخ `config/email.example.php` إلى `config/email.php` وعبّئ **Gmail App Password** (للإيميلات).
+**Demo admin:** `admin@gmail.com / 0000`
 
-## 👤 حساب تجريبي
+## 🧰 Stack
 
-| الدور | الإيميل | كلمة المرور |
-|---|---|---|
-| أدمن | admin@gmail.com | 0000 |
-
-> عند أول دخول تُرقّى كلمة المرور تلقائيًا لتشفير bcrypt.
-
-## 🧰 التقنيات
-
-PHP 8.2 · MySQL/MariaDB · Bootstrap 5 RTL · Chart.js · AOS · PHPMailer · Vanilla JS (Fetch API)
-
-## 📁 الهيكل
-
-```
-├── api/            # نقاط JSON للسلة والكوبونات
-├── assets/         # custom.css
-├── backups/        # نسخ احتياطية (مستبعد من git)
-├── config/         # إعدادات البريد (مستبعد من git)
-├── connection/     # اتصال DB (مستبعد من git)
-├── include/        # header/footer/csrf/coupon/mailer/pagination/rate_limit
-├── screenshots/    # لقطات README
-└── *.php           # صفحات المتجر واللوحة
-```
-
-## 🗺️ خارطة التطوير (الرحلات الأربع)
-
-1. **القلب التجاري** — توصيل + مخزون + طلباتي + إيميلات
-2. **تجربة التسوق** — بحث/تصنيفات/فرز + واتساب + استعادة كلمة مرور
-3. **التسويق** — كوبونات + تقييمات + تصدير CSV
-4. **النضج** — Rate limiting + Pagination + Backups + SEO
-
----
-مشروع تعليمي تطبيقي — أكرم منصّر
+PHP 8.2 · MySQL · Bootstrap 5 RTL · Chart.js · AOS · PHPMailer · Vanilla JS (Fetch API)
