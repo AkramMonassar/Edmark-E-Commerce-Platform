@@ -90,6 +90,17 @@
     } // ← استُبدل
   }
 
+  function updateSummary(s) {
+    const set = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = v;
+    };
+    set('sumTotal', s.total + '$');
+    set('sumDiscount', '-' + s.discount + '$');
+    set('sumCode', s.code ? '(' + s.code + ')' : '');
+    set('sumFinal', s.total_after + '$');
+  }
+
   function toast(msg, type = 'success') {
     const t = document.createElement('div');
     t.className = 'alert alert-' + type + ' position-fixed top-0 start-50 translate-middle-x mt-3 py-2 shadow';
@@ -110,7 +121,7 @@
       if (r.ok) {
         updateCartUI(r);
         toast('تمت الإضافة إلى السلة ✅');
-      } else if (r.error === 'login_required') location.href = 'login.php';
+      } else if (r.error === 'login_required') location.href = 'Login.php';
       else if (r.error === 'already_in_cart') toast('المنتج موجود في سلتك بالفعل', 'warning');
       else if (r.error === 'out_of_stock') toast('هذا المنتج نفد من المخزون', 'warning');
       else toast(r.error === 'out_of_stock' ? 'الكمية المطلوبة تتجاوز المخزون المتاح' : 'تعذر تحديث الكمية', 'warning');
@@ -128,9 +139,10 @@
       });
       if (r.ok) {
         btn.closest('tr').remove();
-        if (tbody && !tbody.querySelector('tr')) location.reload(); // لإظهار حالة "السلة فارغة"
+        if (tbody && !tbody.querySelector('tr')) location.reload();
         else {
           updateCartUI(r);
+          updateSummary(r); // ← سطر جديد
           toast('تم حذف المنتج');
         }
       }
@@ -172,6 +184,7 @@
           void cell.offsetWidth;
           cell.classList.add('flash');
           updateCartUI(r);
+          updateSummary(r); // ← سطر جديد: يحديث ملخص الخصم/الإجمالي
         } else if (r.error === 'out_of_stock') {
           toast('الحد الأقصى المتاح من المخزون: ' + stock, 'warning');
         } else {
