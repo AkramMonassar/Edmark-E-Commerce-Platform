@@ -4,7 +4,7 @@
 
 > 🇬 English version: [README.md](README.md)
 
-## 🎥 العرض التجريبي (60 ثانية)
+## 🎥 العرض التجريبي 
 
 [![شاهد الفيديو](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/gYdKw-2fKjY)
 
