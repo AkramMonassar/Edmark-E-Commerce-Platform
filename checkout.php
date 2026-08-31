@@ -4,7 +4,7 @@ require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
 
 if (!isset($_SESSION['u_id'])) {
-  header("Location: login.php");
+  header("Location: Login.php");
   exit;
 }
 $uid = (int) $_SESSION['u_id'];
@@ -44,8 +44,8 @@ $providers = [
   ],
 ];
 $storeInfo = [
-  'wallet'   => 'رقم محفظة المتجر: <b class="text-brand">777-123-456</b>',
-  'exchange' => 'اسم المستفيد للتحويل: <b class="text-brand">متجر إدمارك — أكرم منصّر</b>',
+  'wallet'   => 'رقم محفظة المتجر: <b class="text-brand">000-000-777</b>',
+  'exchange' => 'اسم المستفيد للتحويل: <b class="text-brand">متجر إدمارك — حساب رسمي</b>',
 ];
 
 function luhnOk($num)
@@ -359,7 +359,7 @@ if ($res) {
                   <option value="<?php echo $k; ?>"><?php echo htmlspecialchars($w, ENT_QUOTES); ?></option>
                 <?php endforeach; ?>
               </select>
-              <div class="alert alert-light border small"><?php echo $storeInfo['wallet']; ?> — حوّل المبلغ ثم أدخل بيانات تحويلك:</div>
+              <div class="alert alert-light border small text-start"><?php echo $storeInfo['wallet']; ?> — حوّل المبلغ ثم أدخل بيانات تحويلك:</div>
               <div class="form-floating mb-2">
                 <input type="text" name="walletNumber" class="form-control" id="walletNumber" value="<?php echo $old('walletNumber'); ?>">
                 <label for="walletNumber">رقم محفظتك</label>

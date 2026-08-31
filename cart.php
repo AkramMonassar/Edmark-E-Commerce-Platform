@@ -4,7 +4,7 @@ require_once __DIR__ . '/include/csrf.php';
 require("connection/connection.php");
 
 if (!isset($_SESSION['u_id'])) {
-    header("Location: login.php");
+    header("Location: Login.php");
     exit;
 }
 $uid = (int) $_SESSION['u_id'];
@@ -96,9 +96,9 @@ $count = $result2 ? mysqli_num_rows($result2) : 0;
         <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" data-aos="fade-up">
             <div class="row g-3 mt-1 align-items-stretch">
                 <div class="col-md-5">
-                    <div class="card border-0 shadow-sm p-3 h-100">
+                    <div class="card border-0 shadow-sm p-3 pt-4 h-100">
                         <form id="couponForm" class="d-flex gap-2">
-                            <input type="text" id="couponInput" class="form-control" placeholder="كود الخصم (جرّب: EDMARK10)" style="text-transform:uppercase">
+                            <input type="text" id="couponInput" class="form-control" placeholder="كود الخصم" style="text-transform:uppercase">
                             <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-ticket-perforated"></i> تطبيق</button>
                         </form>
                         <div id="couponState" class="small mt-2"><?php if ($ci['code'] !== ''): ?>✅ الكوبون مطبق — <a href="#" id="rmCoupon" class="text-danger">إزالة</a><?php endif; ?></div>
@@ -115,7 +115,7 @@ $count = $result2 ? mysqli_num_rows($result2) : 0;
             </div>
             <form method="post">
                 <?php echo csrf_field(); ?>
-                <button type="submit" name="deleteAll" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> </button>تفريغ السلة</button>
+                <button type="submit" name="deleteAll" class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> تفريغ السلة</button>
             </form>
             <a href="checkout.php" class="btn btn-brand btn-lg"><i class="bi bi-credit-card"></i> إتمام الدفع</a>
         </div>

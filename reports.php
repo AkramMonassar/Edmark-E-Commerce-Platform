@@ -5,7 +5,7 @@ require_once __DIR__ . '/connection/connection.php';
 
 // حماية: أدمن فقط
 if (!isset($_SESSION['u_id'])) {
-    header("Location: login.php");
+    header("Location: Login.php");
     exit;
 }
 $uid = (int) $_SESSION['u_id'];

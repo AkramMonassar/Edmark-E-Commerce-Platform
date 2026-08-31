@@ -9,7 +9,7 @@ require_once __DIR__ . '/include/pagination.php';
 if (isset($_POST['addtocart'])) {
   csrf_check();
   if (!isset($_SESSION['u_id'])) {
-    header("Location: login.php");
+    header("Location: Login.php");
     exit;
   }
   $uid = (int) $_SESSION['u_id'];
@@ -182,7 +182,7 @@ include("include/header.php");
                   <button type="submit" name="addtocart" class="btn btn-brand btn-sm w-100"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
                 </form>
               <?php else: ?>
-                <a href="login.php" class="btn btn-outline-secondary btn-sm w-100 mt-auto">سجل الدخول للشراء</a>
+                <a href="Login.php" class="btn btn-outline-secondary btn-sm w-100 mt-auto">سجل الدخول للشراء</a>
               <?php endif; ?>
             </div>
           </div>

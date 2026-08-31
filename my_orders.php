@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
 
-if (!isset($_SESSION['u_id'])) { header("Location: login.php"); exit; }
+if (!isset($_SESSION['u_id'])) { header("Location: Login.php"); exit; }
 $uid = (int) $_SESSION['u_id'];
 include("include/header.php");
 

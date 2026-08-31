@@ -6,7 +6,7 @@
 
 ## 🎥 العرض التجريبي (60 ثانية)
 
-[![شاهد الفيديو](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/VIDEO_ID)
+[![شاهد الفيديو](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/gYdKw-2fKjY)
 
 ## ✨ الميزات
 

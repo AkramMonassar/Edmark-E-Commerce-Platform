@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/connection/connection.php';
 
 if (!isset($_SESSION['u_id'])) {
-    header("Location: login.php");
+    header("Location: Login.php");
     exit;
 }
 

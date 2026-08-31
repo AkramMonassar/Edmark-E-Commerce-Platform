@@ -277,7 +277,7 @@ if (isset($_SESSION['u_id'])) {
                         <?php endif; ?>
                         <li class="nav-item"><a class="nav-link" href="logout.php">تسجيل الخروج</a></li>
                     <?php else: ?>
-                        <li class="nav-item"><a class="nav-link" href="login.php">تسجيل الدخول</a></li>
+                        <li class="nav-item"><a class="nav-link" href="Login.php">تسجيل الدخول</a></li>
                         <li class="nav-item ms-lg-2"><a class="btn btn-brand btn-sm" href="create_acount.php">حساب جديد</a></li>
                     <?php endif; ?>
                 </ul>

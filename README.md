@@ -6,7 +6,7 @@ A full-featured e-commerce store built with **PHP 8 + MySQL + Bootstrap 5** — 
 
 ## 🎥 Demo (60s)
 
-[![Watch demo](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/VIDEO_ID)
+[![Watch demo](https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg)](https://youtu.be/gYdKw-2fKjY)
 
 ## ✨ Features
 

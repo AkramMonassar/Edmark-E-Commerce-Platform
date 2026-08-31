@@ -8,7 +8,7 @@ $id = (int) ($_GET['id'] ?? 0);
 if (isset($_POST['addtocart'])) {
     csrf_check();
     if (!isset($_SESSION['u_id'])) {
-        header("Location: login.php");
+        header("Location: Login.php");
         exit;
     }
     $uid = (int) $_SESSION['u_id'];
@@ -83,7 +83,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                         <button type="submit" name="addtocart" class="btn btn-brand btn-lg"><i class="bi bi-cart-plus"></i> أضف للسلة</button>
                     </form>
                 <?php else: ?>
-                    <a href="login.php" class="btn btn-outline-secondary btn-lg mt-3">سجل الدخول للشراء</a>
+                    <a href="Login.php" class="btn btn-outline-secondary btn-lg mt-3">سجل الدخول للشراء</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -126,7 +126,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                             <button class="btn btn-brand btn-sm w-100" name="add_review" type="submit">إرسال التقييم</button>
                         </form>
                     <?php else: ?>
-                        <p class="text-muted small mb-0"><a href="login.php" class="text-brand">سجل الدخول</a> لتتمكن من التقييم.</p>
+                        <p class="text-muted small mb-0"><a href="Login.php" class="text-brand">سجل الدخول</a> لتتمكن من التقييم.</p>
                     <?php endif; ?>
                 </div>
             </div>

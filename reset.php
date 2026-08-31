@@ -6,7 +6,6 @@ require_once __DIR__ . '/include/rate_limit.php';
 
 $msg = '';
 $msgType = 'info';
-$debug = ''; // 🩺 تشخيص مؤقت — احذفه بعد ما تحل المشكلة
 
 $token = trim($_GET['token'] ?? $_POST['token'] ?? '');
 $validToken = null;
@@ -20,12 +19,8 @@ if ($token !== '') {
         if (strtotime($rowT['reset_expires']) > time()) {
             $validToken = $rowT;
             $expiresAt = strtotime($rowT['reset_expires']);
-        } else {
-            $debug = 'الرمز موجود لكنه منتهي: مخزّن=' . $rowT['reset_expires'] . ' / الآن=' . date('Y-m-d H:i:s');
         }
-    } else {
-        $debug = 'الرمز غير موجود بالجدول أصلًا: إما طلب أحدثُ استبدله، أو لم يُحفظ عند الإرسال.';
-    }
+    } 
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -70,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($validToken && strlen($pass) >= 6) {
                 $hash = password_hash($pass, PASSWORD_DEFAULT);
                 mysqli_query($con_db, "UPDATE users SET u_pass = '$hash', reset_token = NULL, reset_expires = NULL WHERE u_id = " . (int)$validToken['u_id']);
-                header('Location: login.php?reset=1');
+                header('Location: Login.php?reset=1');
                 exit;
             }
             $msg = 'الرابط غير صالح أو منتهي، أو كلمة المرور أقل من 6 أحرف.';
@@ -147,9 +142,6 @@ include("include/header.php");
 
                     <?php if ($token !== '' && !$validToken): ?>
                         <p class="text-danger small">هذا الرابط غير صالح أو منتهي الصلاحية.</p>
-                        <?php if ($debug !== ''): ?>
-                            <div class="alert alert-warning py-2 small text-start">🩺 تشخيص مؤقت:<br><?php echo htmlspecialchars($debug, ENT_QUOTES); ?></div>
-                        <?php endif; ?>
                         <a href="reset.php" class="btn btn-outline-secondary btn-sm">طلب رابط جديد</a>
                     <?php elseif ($validToken): ?>
                         <!-- العداد التنازلي -->
@@ -183,7 +175,7 @@ include("include/header.php");
                             <button type="submit" name="request_reset" class="btn btn-brand w-100">أرسل رابط الاستعادة</button>
                         </form>
                     <?php endif; ?>
-                    <p class="small mt-3 mb-0"><a href="login.php" class="text-brand">العودة لتسجيل الدخول</a></p>
+                    <p class="small mt-3 mb-0"><a href="Login.php" class="text-brand">العودة لتسجيل الدخول</a></p>
                 </div>
             </div>
         </div>

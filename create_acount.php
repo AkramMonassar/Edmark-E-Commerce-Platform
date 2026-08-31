@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add'])) {
             $ins = mysqli_prepare($con_db, "INSERT INTO users (u_name, u_email, u_pass, u_type) VALUES (?, ?, ?, ?)");
             mysqli_stmt_bind_param($ins, "ssss", $name, $email, $hash, $type);
             if (mysqli_stmt_execute($ins)) {
-                header("Location: login.php?added=1");
+                header("Location: Login.php?added=1");
                 exit;
             } else {
                 $errors[] = 'خطأ أثناء الحفظ: ' . mysqli_error($con_db);
@@ -62,7 +62,7 @@ include("include/header.php");
                         </div>
                         <button type="submit" name="add" class="btn btn-brand w-100">إنشاء الحساب <i class="bi bi-check-circle"></i></button>
                     </form>
-                    <p class="small mt-3 mb-0">عندك حساب؟ <a href="login.php" class="text-brand fw-bold">سجل دخولك</a></p>
+                    <p class="small mt-3 mb-0">عندك حساب؟ <a href="Login.php" class="text-brand fw-bold">سجل دخولك</a></p>
                 </div>
             </div>
         </div>

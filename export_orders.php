@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/connection/connection.php';
 
-if (!isset($_SESSION['u_id'])) { header("Location: login.php"); exit; }
+if (!isset($_SESSION['u_id'])) { header("Location: Login.php"); exit; }
 $uid = (int) $_SESSION['u_id'];
 $st = mysqli_prepare($con_db, "SELECT u_type FROM users WHERE u_id = ?");
 mysqli_stmt_bind_param($st, "i", $uid);
