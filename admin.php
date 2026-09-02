@@ -2,7 +2,6 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/include/csrf.php';
 require_once __DIR__ . '/connection/connection.php';
-
 // ===== حماية: أدمن فقط =====
 if (!isset($_SESSION['u_id'])) {
   header("Location: Login.php");
@@ -17,15 +16,12 @@ if (($me['u_type'] ?? '') !== 'admin') {
   header("Location: index.php");
   exit;
 }
-
 $tab = $_GET['tab'] ?? 'stats';
-
 // ===== معالجة العمليات (PRG) =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   csrf_check();
   $action = $_POST['action'] ?? '';
   $flash = '';
-
   if ($action === 'confirm_order') {
     $oid = (int) $_POST['order_id'];
     mysqli_query($con_db, "UPDATE orders SET status='confirmed' WHERE order_id=$oid");
@@ -36,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($o && !empty($o['u_email'])) {
         $cname = htmlspecialchars($o['customer_name'] ?: $o['u_name'], ENT_QUOTES);
         $body = "<div dir='rtl' style='font-family:Tahoma,sans-serif;max-width:600px;margin:auto;background:#f8f9fa;padding:20px;border-radius:12px'>
-                    <h2 style='color:#2e7d32'>✅ طلبك #$oid تم تأكيده</h2>
-                    <p>عزيزنا <b>$cname</b>،</p>
-                    <p>تم تأكيد طلبك وهو الآن <b>قيد التجهيز</b>. الإجمالي: <b>" . (int)$o['total'] . "$</b>.</p>
-                    <p>سنتواصل معك على <b>" . htmlspecialchars($o['customer_phone'] ?? '', ENT_QUOTES) . "</b> لتنسيق التوصيل إلى: " . htmlspecialchars(($o['city'] ?? '') . ' - ' . ($o['address'] ?? ''), ENT_QUOTES) . "</p>
-                    <p style='color:#888;font-size:12px;text-align:center'>رسالة آلية من متجر إدمارك</p>
-                </div>";
+<h2 style='color:#2e7d32'>✅ طلبك #$oid تم تأكيده</h2>
+<p>عزيزنا <b>$cname</b>،</p>
+<p>تم تأكيد طلبك وهو الآن <b>قيد التجهيز</b>. الإجمالي: <b>" . (int)$o['total'] . "$</b>.</p>
+<p>سنتواصل معك على <b>" . htmlspecialchars($o['customer_phone'] ?? '', ENT_QUOTES) . "</b> لتنسيق التوصيل إلى: " . htmlspecialchars(($o['city'] ?? '') . ' - ' . ($o['address'] ?? ''), ENT_QUOTES) . "</p>
+<p style='color:#888;font-size:12px;text-align:center'>رسالة آلية من متجر إدمارك</p>
+</div>";
         send_mail($o['u_email'], $o['customer_name'] ?: $o['u_name'], "✅ تم تأكيد طلبك #$oid — متجر إدمارك", $body);
         $flash = "تم تأكيد الطلب #$oid وإرسال إشعار للعميل 📧";
       } else {
@@ -71,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price  = (int) ($_POST['p_price'] ?? 0);
     $qty    = (int) ($_POST['p_quantity'] ?? 0);
     $desc   = trim($_POST['p_describe'] ?? '');
-    $catId  = (int) ($_POST['category_id'] ?? 0);   // ← جديد
-    $catSql = $catId > 0 ? $catId : 'NULL';         // ← جديد
+    $catId  = (int) ($_POST['category_id'] ?? 0);
+    $catSql = $catId > 0 ? $catId : 'NULL';
     if ($name === '' || $price <= 0) {
       $flash = 'أدخل اسم المنتج وسعرًا صحيحًا';
       $tab = 'products';
@@ -93,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
       $ne = mysqli_real_escape_string($con_db, $name);
       $de = mysqli_real_escape_string($con_db, $desc);
-      mysqli_query($con_db, "INSERT INTO product (p_name, p_quantity, p_price, p_describe, p_img, category_id) VALUES ('$ne', $qty, $price, '$de', '$img', $catSql)");   // ← استُبدل (أضيف category_id)
+      mysqli_query($con_db, "INSERT INTO product (p_name, p_quantity, p_price, p_describe, p_img, category_id) VALUES ('$ne', $qty, $price, '$de', '$img', $catSql)");
       $flash .= "تمت إضافة المنتج ✅";
       $tab = 'products';
     }
@@ -103,16 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price  = (int) ($_POST['p_price'] ?? 0);
     $qty    = (int) ($_POST['p_quantity'] ?? 0);
     $desc   = mysqli_real_escape_string($con_db, trim($_POST['p_describe'] ?? ''));
-    $catId  = (int) ($_POST['category_id'] ?? 0);   // ← جديد
-    $catSql = $catId > 0 ? $catId : 'NULL';         // ← جديد
-    mysqli_query($con_db, "UPDATE product SET p_name='$name', p_price=$price, p_quantity=$qty, p_describe='$desc', category_id=$catSql WHERE p_id=$pid");   // ← استُبدل (أضيف category_id)
+    $catId  = (int) ($_POST['category_id'] ?? 0);
+    $catSql = $catId > 0 ? $catId : 'NULL';
+    mysqli_query($con_db, "UPDATE product SET p_name='$name', p_price=$price, p_quantity=$qty, p_describe='$desc', category_id=$catSql WHERE p_id=$pid");
     $flash = "تم تحديث المنتج #$pid ✅";
-    $tab = 'products';
-  } elseif ($action === 'delete_product') {
-    $pid = (int) ($_POST['p_id'] ?? 0);
-    mysqli_query($con_db, "DELETE FROM product WHERE p_id=$pid");
-    mysqli_query($con_db, "DELETE FROM cart WHERE id=$pid");
-    $flash = "تم حذف المنتج #$pid 🗑️";
     $tab = 'products';
   } elseif ($action === 'delete_user') {
     $tid = (int) ($_POST['user_id'] ?? 0);
@@ -156,15 +146,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $flash = 'تم حذف الكوبون';
     $tab = 'coupons';
   }
-
-
   header("Location: admin.php?tab=$tab" . ($flash !== '' ? '&msg=' . urlencode($flash) : ''));
   exit;
 }
-
 $flash = htmlspecialchars($_GET['msg'] ?? '', ENT_QUOTES);
 include("include/header.php");
-
 // ===== بيانات اللوحة =====
 $cnt = fn($q) => ($r = mysqli_fetch_assoc(mysqli_query($con_db, $q))) ? (int) array_values($r)[0] : 0;
 $sUsers    = $cnt("SELECT COUNT(*) FROM users");
@@ -175,22 +161,15 @@ $sRevenue  = $cnt("SELECT COALESCE(SUM(total),0) FROM orders WHERE status IN ('p
 $catsAll = [];
 $rcq = mysqli_query($con_db, "SELECT * FROM categories ORDER BY cat_id");
 if ($rcq) while ($c = mysqli_fetch_assoc($rcq)) $catsAll[] = $c;
-
 $orders  = mysqli_query($con_db, "SELECT o.*, u.u_name FROM orders o LEFT JOIN users u ON u.u_id = o.u_id ORDER BY o.order_id DESC");
 $products = mysqli_query($con_db, "SELECT * FROM product ORDER BY p_id");
 $users   = mysqli_query($con_db, "SELECT * FROM users ORDER BY u_id");
-
 $badge = ['pending' => 'warning', 'paid' => 'success', 'confirmed' => 'info', 'cod' => 'secondary', 'cancelled' => 'danger'];
 $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع بطاقة', 'confirmed' => 'مؤكد', 'cod' => 'عند الاستلام', 'cancelled' => 'ملغي'];
-
-
 ?>
-
 <div class="container my-4">
   <h4 class="mb-4" data-aos="fade-right"><i class="bi bi-speedometer2 text-brand"></i> لوحة التحكم</h4>
-
   <?php if ($flash !== ''): ?><div class="alert alert-light border py-2"><?php echo $flash; ?></div><?php endif; ?>
-
   <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
     <li class="nav-item"><a class="nav-link <?php echo $tab === 'stats' ? 'active bg-brand' : ''; ?>" href="admin.php?tab=stats">📊 الإحصائيات</a></li>
     <li class="nav-item"><a class="nav-link" href="reports.php">📈 التقارير</a></li>
@@ -204,7 +183,6 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       </a>
     </li>
   </ul>
-
   <!-- ===== الإحصائيات ===== -->
   <?php if ($tab === 'stats'): ?>
     <div class="row g-3">
@@ -235,9 +213,7 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       </div>
     </div>
   <?php endif; ?>
-
   <!-- ===== الطلبات ===== -->
-
   <?php if ($tab === 'orders'): ?>
     <div class="d-flex justify-content-end mb-2"><a href="export_orders.php" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-spreadsheet"></i> تصدير CSV (Excel)</a></div>
     <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
@@ -294,7 +270,6 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       </table>
     </div>
   <?php endif; ?>
-
   <!-- ===== المنتجات ===== -->
   <?php if ($tab === 'products'): ?>
     <div class="card border-0 shadow-sm mb-4" data-aos="fade-up">
@@ -345,8 +320,8 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
               <td><input type="text" class="form-control form-control-sm f-name" value="<?php echo htmlspecialchars($p['p_name'], ENT_QUOTES); ?>"></td>
               <td style="width:90px"><input type="number" class="form-control form-control-sm f-price" value="<?php echo (int)$p['p_price']; ?>"></td>
               <td style="width:90px"><input type="number" class="form-control form-control-sm f-qty" value="<?php echo (int)$p['p_quantity']; ?>"></td>
-              <td><?php $qq = (int)$p['p_quantity'];
-                  echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
+              <td class="stock-cell"><?php $qq = (int)$p['p_quantity'];
+                                      echo $qq <= 0 ? '<span class="badge text-bg-danger">نفد</span>' : ($qq <= 5 ? '<span class="badge text-bg-warning">منخفض: ' . $qq . '</span>' : '<span class="badge text-bg-success">متوفر</span>'); ?></td>
               <td style="width:130px">
                 <select class="form-select form-select-sm f-cat">
                   <option value="0">—</option>
@@ -357,13 +332,8 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
               </td>
               <td><input type="text" class="form-control form-control-sm f-desc" value="<?php echo htmlspecialchars($p['p_describe'], ENT_QUOTES); ?>"></td>
               <td class="text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-secondary save-one" title="حفظ هذا المنتج فقط"><i class="bi bi-save"></i> حفظ</button>
-                <form method="post" class="d-inline">
-                  <?php echo csrf_field(); ?>
-                  <input type="hidden" name="action" value="delete_product">
-                  <input type="hidden" name="p_id" value="<?php echo (int)$p['p_id']; ?>">
-                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                </form>
+                <button type="button" class="btn btn-sm btn-outline-secondary save-one" title="حفظ هذا المنتج"><i class="bi bi-save"></i> حفظ</button>
+                <button type="button" class="btn btn-sm btn-outline-danger delete-one" title="حذف المنتج"><i class="bi bi-trash"></i></button>
               </td>
             </tr>
           <?php endwhile; ?>
@@ -371,7 +341,6 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       </table>
     </div>
   <?php endif; ?>
-
   <!-- ===== المستخدمون ===== -->
   <?php if ($tab === 'users'): ?>
     <div class="table-responsive bg-white rounded-3 shadow-sm p-3" data-aos="fade-up">
@@ -416,7 +385,6 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
       </table>
     </div>
   <?php endif; ?>
-
   <!-- ===== الكوبونات ===== -->
   <?php if ($tab === 'coupons'): ?>
     <div class="card border-0 shadow-sm mb-4" data-aos="fade-up">
@@ -475,30 +443,23 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
   <div class="card border-0 shadow-sm" data-aos="fade-up">
     <div class="card-body">
       <h5 class="mb-3"><i class="bi bi-database text-brand"></i> النسخ الاحتياطي</h5>
-
       <?php if (isset($_GET['backup_done'])): ?>
         <div class="alert alert-success py-2">تم إنشاء النسخة الاحتياطية بنجاح ✅</div>
       <?php endif; ?>
-
       <p class="text-muted">
         من هنا يمكنك إنشاء نسخة احتياطية من قاعدة البيانات. سيتم حفظ الملفات داخل مجلد
         <code>backups/</code>.
       </p>
-
       <a href="backup.php" class="btn btn-brand" onclick="return confirm('هل تريد إنشاء نسخة احتياطية الآن؟')">
         <i class="bi bi-download"></i> إنشاء نسخة احتياطية
       </a>
-
       <?php
       $backupDir = __DIR__ . '/backups';
-
       if (is_dir($backupDir)):
         $files = glob($backupDir . '/*.sql');
         rsort($files);
       ?>
-
         <h6 class="mt-4">آخر النسخ الاحتياطية</h6>
-
         <?php if (empty($files)): ?>
           <p class="text-muted">لا توجد نسخ احتياطية بعد.</p>
         <?php else: ?>
@@ -523,7 +484,6 @@ $label = ['pending' => 'بانتظار التأكيد', 'paid' => 'مدفوع ب
             </table>
           </div>
         <?php endif; ?>
-
       <?php endif; ?>
     </div>
   </div>
